@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import cta from '../assets/img/cta-bg.jpg'; // Adjust the path as necessary
-const ResumeCTA = () => {
+import cta from '../assets/img/cta-bg.jpg';
+
+const ResumeCTA: React.FC = () => {
   const [isDownloading, setIsDownloading] = useState(false);
   
   const handleDownload = async () => {
@@ -8,7 +9,6 @@ const ResumeCTA = () => {
     
     try {
       // Direct link to your Google Drive file for download
-      // Using the direct download link format
       const resumeUrl = "https://drive.google.com/uc?export=download&id=1yeeM2nsSUSFQ9nqnz2ljbPshEIaRDWFJ";
       
       // Create an anchor element
@@ -34,24 +34,32 @@ const ResumeCTA = () => {
   };
 
   return (
-    <section id="cta" className="cta"  style={{ backgroundImage: `url(${cta})` }}>
-      <div className="container" data-aos="zoom-in">
-        <div className="text-center">
-          <h3>My Resume</h3>
-          <p>Download my latest resume to explore my professional experience, skills, and projects.</p>
+    <section 
+      id="cta" 
+      className="py-16 bg-cover bg-center relative"
+      style={{ backgroundImage: `url(${cta})` }}
+    >
+      <div className="absolute inset-0 bg-black/70"></div>
+      
+      <div className="container mx-auto px-4 relative z-10" data-aos="zoom-in">
+        <div className="text-center text-white">
+          <h3 className="text-3xl font-bold mb-4">My Resume</h3>
+          <p className="text-lg mb-8 max-w-2xl mx-auto">
+            Download my latest resume to explore my professional experience, skills, and projects.
+          </p>
           <button 
             onClick={handleDownload} 
-            className="cta-btn"
+            className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-3 px-8 rounded-lg transition-all duration-300"
             disabled={isDownloading}
           >
             {isDownloading ? (
               <>
-                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                <span className="inline-block w-4 h-4 border-2 border-t-transparent border-black rounded-full animate-spin mr-2"></span>
                 Downloading...
               </>
             ) : (
               <>
-                <i className="bx bx-download me-2"></i>
+                <i className="bi bi-download mr-2"></i>
                 Download Resume
               </>
             )}

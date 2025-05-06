@@ -1,5 +1,5 @@
 import { Send, X } from "lucide-react";
-import React, { useState } from "react";
+import { useState } from "react";
 import 'bootstrap-icons/font/bootstrap-icons.css';
 const Contact = () => {
   const [formData, setFormData] = useState({

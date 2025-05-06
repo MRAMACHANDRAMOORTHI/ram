@@ -21,7 +21,7 @@ import Isotope from 'isotope-layout';
 import AOS from 'aos';
 import GLightbox from 'glightbox';
 import PureCounter from '@srexi/purecounterjs';
-import React from 'react';
+
 
 // Define the initialization function to be called after components mount
 window.initGpTemplate = () => {

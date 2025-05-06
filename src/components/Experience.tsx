@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { Briefcase, ExternalLink, ChevronRight, Calendar } from 'lucide-react';
 // In your entry file or component that uses the icons
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -38,7 +38,7 @@ interface Experience {
   skills: string[];
 }
 
-const ExperienceCard = ({ experience, index, isLast }: { experience: Experience; index: number; isLast: boolean }) => {
+const ExperienceCard = ({ experience, index }: { experience: Experience; index: number; isLast: boolean }) => {
   const [expanded, setExpanded] = useState(false);
   
   return (

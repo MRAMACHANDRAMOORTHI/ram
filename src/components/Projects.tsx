@@ -2,11 +2,8 @@ import React, { useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { EffectCards, Pagination, Autoplay } from 'swiper/modules';
 import { motion } from 'framer-motion';
-
 import 'swiper/css';
-import 'swiper/css/effect-cards';
 import 'swiper/css/pagination';
-import { div } from 'framer-motion/client';
 
 import a from '../assets/img/screenshots/a.png';
 import b from '../assets/img/screenshots/b.png';

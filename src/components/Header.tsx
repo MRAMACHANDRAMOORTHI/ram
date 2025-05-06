@@ -72,7 +72,7 @@ const Header: React.FC = () => {
           <HashLink
             smooth
             to="/#about"
-            className="border border-yellow-400 text-yellow-400 hover:bg-yellow-400 hover:text-black px-4 py-2 rounded transition-all"
+            className="border border-yellow-400 text-yellow-400 px-4 py-2 rounded transition-all"
           >
             Get Started
           </HashLink>

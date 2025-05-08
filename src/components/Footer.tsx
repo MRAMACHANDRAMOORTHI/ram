@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Footer: React.FC = () => {
+const Footer = () => {
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
@@ -21,13 +21,13 @@ const Footer: React.FC = () => {
 
           {/* Navigation Links */}
           <div className="flex flex-wrap justify-center gap-6">
-            {['Home', 'About', 'Services', 'Contact'].map((link) => (
+            {['hero', 'experience', 'contact', 'Education'].map((link) => (
               <a
                 key={link}
-                href={`#${link.toLowerCase()}`}
+                href={`#${link}`}
                 className="text-gray-300 hover:text-white transition"
               >
-                {link}
+                {link.charAt(0).toUpperCase() + link.slice(1)}
               </a>
             ))}
           </div>
@@ -44,7 +44,7 @@ const Footer: React.FC = () => {
           <div className="text-center">
             Designed by{' '}
             <a
-              href="https://linkedin.com/in/ramachandramoorthi"
+              href="https://www.linkedin.com/in/ramachandramoorthi/"
               className="text-gray-300 hover:text-white"
             >
               Ramachandramoorthi

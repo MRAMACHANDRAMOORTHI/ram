@@ -50,10 +50,11 @@ const Header: React.FC = () => {
         >
           {[
             { label: 'Home', href: '/#hero' },
-            { label: 'Photo', href: '/#photo' },
-            { label: 'Marks', href: '/#marks' },
+            { label: 'Education', href: '/#Education' },
             { label: 'Skills', href: '/#skills' },
-            { label: 'Contact', href: '/#contact' },
+            { label: 'Projects', href: '/#projects' },
+            { label: 'experience', href: '/#experience' },
+            {label: 'contact', href: '/#contact' },
           ].map((item, idx) => (
             <HashLink
               key={idx}

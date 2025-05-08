@@ -31,10 +31,10 @@ const clientLogos = [
   client10,
 ];
 
-const Clients: React.FC = () => {
+const Clients = () => {
   return (
-    <section id="clients" className="clients">
-      <div className="container" data-aos="zoom-in">
+    <section id="clients" className="clients bg-gray-50 py-16">
+      <div className="container mx-auto px-4" data-aos="zoom-in">
         <Swiper
           modules={[Autoplay, Pagination]}
           slidesPerView="auto"
@@ -50,8 +50,14 @@ const Clients: React.FC = () => {
           className="clients-slider"
         >
           {clientLogos.map((src, idx) => (
-            <SwiperSlide key={idx}>
-              <img src={src} className="img-fluid" alt={`Client ${idx + 1}`} />
+            <SwiperSlide key={idx} className="flex items-center justify-center">
+              <div className="h-24 flex items-center justify-center">
+                <img 
+                  src={src} 
+                  className="max-h-16 w-auto object-contain transition-all duration-300 filter-none hover:opacity-75" 
+                  alt={`Client ${idx + 1}`} 
+                />
+              </div>
             </SwiperSlide>
           ))}
         </Swiper>

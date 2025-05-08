@@ -31,13 +31,14 @@ const App: React.FC = () => {
       <Hero />
       <main id="main">
         <About />
+        <Clients />
         <TechStack />
         <Skills />
         <ResumeCTA />
         <Experience />
         <Education />
         <Projects />
-        <Clients />
+        
         <Contact />
       </main>
       <Footer />

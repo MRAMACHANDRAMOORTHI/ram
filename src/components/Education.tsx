@@ -36,7 +36,7 @@ const counts = [
   },
   {
     icon: <FaLaptopCode className="text-purple-600 text-4xl" />,
-    count: 9.64,
+    count: 9.40,
     label: "MCA",
     note: "CGPA - SRM Institute of Science & Tech (2023–2025)",
     link: "https://www.srmist.edu.in/",

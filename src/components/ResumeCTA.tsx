@@ -9,7 +9,7 @@ const ResumeCTA: React.FC = () => {
     
     try {
       // Direct link to your Google Drive file for download
-      const resumeUrl = "https://drive.google.com/file/d/16c2uqGcmIqdte1nz8DvBWaz5XE6c_wF2/view?usp=sharing";
+      const resumeUrl = "https://drive.google.com/file/d/1-5Y00umv62CpICY2g46ycq-7FtvEr8Uv/view?usp=sharing";
       
       // Create an anchor element
       const link = document.createElement('a');

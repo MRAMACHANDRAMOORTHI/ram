@@ -6,86 +6,128 @@ import {
   FaLaptopCode,
 } from "react-icons/fa";
 
-const counts = [
+const educationData = [
   {
-    icon: <FaFileExcel className="text-green-600 text-4xl" />,
-    count: 441,
-    label: "10th Grade",
-    note: "Out of 500",
-    link: "https://schools.org.in/dindigul/33300800505/govt-hr-sec-school-thirumalairayapuram.html",
-    institution: "Govt Higher Secondary School, Thirumalairayapuram",
-    year: "2016",
-  },
-  {
-    icon: <FaBook className="text-indigo-600 text-4xl" />,
-    count: 832,
-    label: "12th Grade",
-    note: "Out of 1200 (Maths - Computer Science)",
-    link: "https://schools.org.in/dindigul/33300800505/govt-hr-sec-school-thirumalairayapuram.html",
-    institution: "Govt Higher Secondary School, Thirumalairayapuram",
-    year: "2018",
-  },
-  {
-    icon: <FaGraduationCap className="text-yellow-600 text-4xl" />,
-    count: 8.5,
-    label: "B.Sc. Computer Science",
-    note: "CGPA - GTN Arts & Science College (2020–2023)",
-    link: "https://gtnarts.org/",
-    institution: "GTN Arts and Science College, Dindigul",
-    year: "2023",
-  },
-  {
-    icon: <FaLaptopCode className="text-purple-600 text-4xl" />,
-    count: 9.40,
-    label: "MCA",
-    note: "CGPA - SRM Institute of Science & Tech (2023–2025)",
+    icon: <FaLaptopCode className="text-white text-xl" />,
+    iconBg: "bg-purple-600",
+    score: "9.40",
+    label: "Master of Computer Applications (MCA)",
+    note: "SRM Institute of Science & Technology",
     link: "https://www.srmist.edu.in/",
-    institution: "SRM Institute of Science and Technology",
-    year: "2025",
+    location: "Chennai",
+    year: "2023 - 2025",
+    color: "border-purple-500",
+  },
+  {
+    icon: <FaGraduationCap className="text-white text-xl" />,
+    iconBg: "bg-yellow-500",
+    score: "8.50",
+    label: "B.Sc. Computer Science",
+    note: "GTN Arts and Science College",
+    link: "https://gtnarts.org/",
+    location: "Dindigul",
+    year: "2020 - 2023",
+    color: "border-yellow-500",
+  },
+  {
+    icon: <FaBook className="text-white text-xl" />,
+    iconBg: "bg-indigo-600",
+    score: "832",
+    label: "Higher Secondary (12th Grade)",
+    note: "Govt Higher Secondary School",
+    subNote: "Maths - Computer Science",
+    link: "https://schools.org.in/dindigul/33131001008/ghss-thirumalairayapuram.html",
+    location: "Thirumalairayapuram",
+    year: "2018",
+    color: "border-indigo-500",
+  },
+  {
+    icon: <FaFileExcel className="text-white text-xl" />,
+    iconBg: "bg-green-600",
+    score: "441",
+    label: "Secondary School (10th Grade)",
+    note: "Govt Higher Secondary School",
+    subNote: "Out of 500",
+    link: "https://schools.org.in/dindigul/33131001008/ghss-thirumalairayapuram.html",
+    location: "Thirumalairayapuram",
+    year: "2016",
+    color: "border-green-500",
   },
 ];
 
-const Counts: React.FC = () => (
-  <div id="Education" className="p-12">
-    <section id="counts" className="py-12 bg-gray-50">
+const Education: React.FC = () => (
+  <div id="Education" className="w-full overflow-hidden">
+    <section
+      id="counts"
+      className="py-16 bg-gradient-to-br from-gray-50 to-blue-50"
+    >
       <div className="container mx-auto px-4">
-        <div className="text-center mb-10" data-aos="fade-up">
-          <h2 className="text-3xl font-bold text-gray-800">
-            🎓 Educational Achievements
+        {/* Section Header */}
+        <div className="text-center mb-12" data-aos="fade-up">
+          <div className="inline-block p-2 px-4 rounded-full bg-blue-100 text-blue-700 font-semibold text-xs mb-3">
+            Academic Journey
+          </div>
+          <h2 className="text-3xl font-bold text-gray-800 mb-3">
+            Educational Achievements
           </h2>
-          <p className="text-gray-600 mt-2">
-            Marks don’t define you, but they reflect your hard work and journey.
-          </p>
+          <div className="w-16 h-1 bg-blue-600 mx-auto rounded-full"></div>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-2 gap-8">
-          {counts.map((item, index) => (
+        {/* Grid Layout - Cards made smaller/compact */}
+        <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+          {educationData.map((item, index) => (
             <div
               key={index}
-              className="bg-white shadow-lg rounded-2xl p-6 transition-transform hover:scale-105"
-              data-aos="zoom-in"
+              className={`relative bg-white rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border-l-4 ${item.color}`}
+              data-aos="fade-up"
               data-aos-delay={100 * (index + 1)}
             >
-              <div className="flex items-center space-x-4 mb-4">
-                {item.icon}
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-700">
-                    {item.label}
-                  </h3>
-                  <p className="text-sm text-gray-500">{item.note}</p>
+              <div className="flex justify-between items-start mb-4">
+                {/* Icon Box */}
+                <div
+                  className={`p-3 rounded-lg shadow-md ${item.iconBg} transform rotate-3`}
+                >
+                  {item.icon}
                 </div>
+
+                {/* Year Badge */}
+                <span className="px-3 py-1 bg-gray-50 text-gray-600 text-[10px] font-bold rounded-full border border-gray-200 uppercase tracking-wide">
+                  {item.year}
+                </span>
               </div>
-              <div className="text-5xl font-bold text-gray-600 mb-2">
-                {item.count}
+
+              {/* Content */}
+              <div>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-4xl font-extrabold text-gray-800">
+                    {item.score}
+                  </span>
+                  <span className="text-xs font-medium text-gray-400">
+                    {item.label.includes("Grade") ? "/ Marks" : "/ CGPA"}
+                  </span>
+                </div>
+
+                <h3 className="text-lg font-bold text-gray-800 mb-1 leading-tight">
+                  {item.label}
+                </h3>
+
+                <a
+                  href={item.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group block"
+                >
+                  <p className="text-gray-600 text-sm font-medium group-hover:text-blue-600 transition-colors">
+                    {item.note}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                    <i className="bi bi-geo-alt-fill"></i> {item.location}
+                    {item.subNote && (
+                      <span className="mx-1">• {item.subNote}</span>
+                    )}
+                  </p>
+                </a>
               </div>
-              <a
-                href={item.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-blue-500 hover:underline"
-              >
-                {item.institution} ({item.year})
-              </a>
             </div>
           ))}
         </div>
@@ -94,4 +136,4 @@ const Counts: React.FC = () => (
   </div>
 );
 
-export default Counts;
+export default Education;

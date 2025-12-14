@@ -1,84 +1,94 @@
-import React from 'react';
-
+import React from "react";
 
 const techData = [
+  // --- CURRENT PRIMARY STACK (Ardhika) ---
   {
-    
-    icon: 'bi bi-filetype-java',
-    title: 'Java',
+    icon: "bi bi-droplet-fill", // Represents Elixir (liquid/drop)
+    title: "Elixir",
     description:
-      'Strongly built my Java foundation through academic courses, NPTEL certification, and hands-on backend projects using Spring Boot.',
-    link: 'https://www.java.com/en/',
+      "My core language for backend engineering. I use functional programming and OTP to build fault-tolerant, scalable workflow engines for the Helpdesk system.",
+    link: "https://elixir-lang.org/",
   },
   {
-    icon: 'bi bi-bootstrap',
-    title: 'Spring Boot',
+    icon: "bi bi-fire", // Represents Phoenix
+    title: "Phoenix Framework",
     description:
-      'Worked on building RESTful APIs and backend logic using Spring Boot during my internship and academic projects like HealthChain and ScholarSphere.',
-    link: 'https://spring.io/projects/spring-boot',
+      "Architecting high-performance web applications. Currently using Phoenix to manage ticket lifecycles, SLA timers, and background jobs.",
+    link: "https://www.phoenixframework.org/",
   },
   {
-    icon: 'bi bi-filetype-js',
-    title: 'JavaScript',
+    icon: "bi bi-layers-fill", // Represents Vue Components
+    title: "Vue.js (Vue 3)",
     description:
-      'Used JavaScript extensively in frontend development for dynamic interactivity in projects like the Learning Portal and mini React apps.',
-    link: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript',
+      "Building the frontend for the Sastra LMS Helpdesk using Vue 3 and Composition API to create reactive dashboards and interactive ticket views.",
+    link: "https://vuejs.org/",
   },
   {
-    icon: 'bi bi-filetype-tsx',
-    title: 'TypeScript',
+    icon: "bi bi-database-check",
+    title: "PostgreSQL & Ecto",
     description:
-      'Applied TypeScript in React and Node.js projects to ensure type safety and cleaner, scalable code — especially in Firebase-integrated apps.',
-    link: 'https://www.typescriptlang.org/docs/',
+      "Designing complex database schemas and using Ecto ORM for efficient data aggregation to power real-time analytics and reporting.",
+    link: "https://www.postgresql.org/",
+  },
+
+  // --- PREVIOUS EXPERIENCE & FOUNDATION (CICT / Retech) ---
+  {
+    icon: "bi bi-filetype-json",
+    title: "React.js",
+    description:
+      "Developed the CICT E-learning portal using React. Experienced with Hooks, Context API, and integrating Firebase for real-time data.",
+    link: "https://reactjs.org/",
   },
   {
-    icon: 'bi bi-filetype-json',
-    title: 'React.js',
+    icon: "bi bi-filetype-tsx",
+    title: "TypeScript",
     description:
-      'Gained deep experience building responsive and modular UIs using React, including advanced Router and Firebase integrations.',
-    link: 'https://reactjs.org/docs/getting-started.html',
+      "Applied TypeScript in React and Node.js projects to ensure type safety and cleaner, scalable code — utilized extensively in the CICT portal.",
+    link: "https://www.typescriptlang.org/",
   },
   {
-    icon: 'bi bi-fire',
-    title: 'Firebase',
+    icon: "bi bi-filetype-js",
+    title: "JavaScript",
     description:
-      'Used Firebase for user authentication and real-time database in projects like the Learning Portal, focusing on secure and live data handling.',
-    link: 'https://firebase.google.com/docs',
+      "Strong command of ES6+ features, utilized across both my Vue.js current work and previous React/Node.js projects.",
+    link: "https://developer.mozilla.org/en-US/docs/Web/JavaScript",
   },
   {
-    icon: 'bi bi-database-fill-gear',
-    title: 'MySQL',
+    icon: "bi bi-filetype-java",
+    title: "Java",
     description:
-      'Experienced in writing optimized queries, designing schemas, and managing data flow in MySQL across major backend projects.',
-    link: 'https://dev.mysql.com/doc/',
+      "Strong academic foundation and internship experience building enterprise backend logic and REST APIs using Java.",
+    link: "https://www.java.com/en/",
   },
   {
-    icon: 'bi bi-hdd-network',
-    title: 'RESTful APIs',
+    icon: "bi bi-bootstrap",
+    title: "Spring Boot",
     description:
-      'Built and consumed RESTful APIs using Spring Boot and Node.js to enable smooth client-server communication in full-stack applications.',
-    link: 'https://restfulapi.net/',
+      "Experience building RESTful APIs and optimizing backend performance during my internship at RETECH Solutions.",
+    link: "https://spring.io/projects/spring-boot",
+  },
+
+  // --- TOOLS & CONCEPTS ---
+  {
+    icon: "bi bi-diagram-2",
+    title: "System Design",
+    description:
+      'Applied system design principles to architect the Helpdesk "Round Robin" assignment logic and scalable database structures.',
+    link: "https://github.com/donnemartin/system-design-primer",
   },
   {
-    icon: 'bi bi-diagram-3-fill',
-    title: 'OOP & OOAD',
+    icon: "bi bi-git",
+    title: "Git & GitHub",
     description:
-      'Practiced Object-Oriented Programming principles and Object-Oriented Analysis & Design in Java and project architecture design.',
-    link: 'https://www.geeksforgeeks.org/object-oriented-design-ooad/',
+      "Daily usage for version control, branching strategies, and team collaboration across distributed agile environments.",
+    link: "https://git-scm.com/",
   },
   {
-    icon: 'bi bi-diagram-2',
-    title: 'System Design',
+    icon: "bi bi-hdd-network",
+    title: "RESTful APIs",
     description:
-      'Self-learned and applied system design principles to structure scalable apps with a focus on clean architecture, databases, and APIs.',
-    link: 'https://www.educative.io/courses/grokking-the-system-design-interview',
-  },
-  {
-    icon: 'bi bi-git',
-    title: 'Git & GitHub',
-    description:
-      'Used Git and GitHub for version control and team collaboration in all my projects and internship, ensuring clean code history and issue tracking.',
-    link: 'https://git-scm.com/doc',
+      " extensive experience designing and consuming REST APIs for smooth client-server communication in both Elixir and Java environments.",
+    link: "https://restfulapi.net/",
   },
 ];
 

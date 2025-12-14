@@ -10,7 +10,7 @@ const Hero: React.FC = () => (
           <h1>RAMACHANDRAMOORTHI <span>MUNIYAPPAN</span></h1>
          
           <h2>MCA</h2>
-          <h2 >Full Stack Developer</h2>
+          <h2 >Software Engineer</h2>
         </div>
       </div>
 

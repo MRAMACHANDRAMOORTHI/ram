@@ -9,7 +9,7 @@ const ResumeCTA: React.FC = () => {
     
     try {
       // Direct link to your Google Drive file for download
-      const resumeUrl = "https://drive.google.com/file/d/1-5Y00umv62CpICY2g46ycq-7FtvEr8Uv/view?usp=sharing";
+      const resumeUrl = "https://drive.google.com/file/d/1GO9Up9bVdiJK8i_iDcBq30QyAVF2doyY/view?usp=sharing";
       
       // Create an anchor element
       const link = document.createElement('a');
@@ -45,7 +45,7 @@ const ResumeCTA: React.FC = () => {
         <div className="text-center text-white">
           <h3 className="text-3xl font-bold mb-4">My Resume</h3>
           <p className="text-lg mb-8 max-w-2xl mx-auto">
-            Download my latest resume to explore my professional experience, skills, and projects.
+            To explore my Education, professional experience, skills, and projects.
           </p>
           <button 
             onClick={handleDownload} 

@@ -42,30 +42,27 @@ const Contact = () => {
     setIsSubmitting(true);
     setErrorMessage("");
 
-    // --- CREDENTIALS ---
+    // --- YOUR VERIFIED CREDENTIALS ---
     const SERVICE_ID = "service_4j965nq";
     const TEMPLATE_ID = "template_8f3h7ch";
-    // Using .trim() to ensure no accidental spaces are included
-    const PUBLIC_KEY = "Fp7LtB83Dsq81zYnB".trim();
+    const PUBLIC_KEY = "69J4SLg5mBEJY2U0d";
 
     if (form.current) {
       emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, form.current, PUBLIC_KEY).then(
         (result) => {
-          console.log("Email sent successfully:", result.text);
+          console.log("SUCCESS!", result.text);
           setIsSubmitting(false);
           setShowAlert(true);
-          setFormData({
-            name: "",
-            email: "",
-            title: "",
-            message: "",
-          });
+          setFormData({ name: "", email: "", title: "", message: "" });
         },
         (error) => {
-          console.error("Failed to send email:", error.text);
+          console.error("FAILED...", error);
           setIsSubmitting(false);
-          // Show the actual error message from EmailJS for better debugging
-          setErrorMessage("Failed: " + (error.text || "Invalid Keys"));
+
+          // CUSTOM ERROR MESSAGE FOR AD BLOCKERS
+          setErrorMessage(
+            "Failed to send. Please disable any Ad Blockers (like uBlock) and try again, or email me directly at mrcmoorthi@gmail.com"
+          );
         }
       );
     }
@@ -259,9 +256,29 @@ const Contact = () => {
               </div>
             )}
 
+            {/* Error Message with Warning Icon */}
             {errorMessage && (
-              <div className="mb-4 p-4 text-red-700 bg-red-100 rounded-lg text-center font-medium">
-                {errorMessage}
+              <div className="mb-6 p-4 border-l-4 border-red-500 bg-red-50 rounded-r-lg flex items-start gap-3">
+                <div className="text-red-500 mt-1">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-red-800">
+                    Message Not Sent
+                  </h3>
+                  <p className="text-sm text-red-700 mt-1">{errorMessage}</p>
+                </div>
               </div>
             )}
 

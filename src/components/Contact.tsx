@@ -6,11 +6,10 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 const Contact = () => {
   const form = useRef<HTMLFormElement>(null);
 
-  // State to handle form data
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    title: "", // Matches {{title}} in your EmailJS template
+    title: "",
     message: "",
   });
 
@@ -31,7 +30,6 @@ const Contact = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Basic validation
     if (
       !formData.name ||
       !formData.email ||
@@ -44,10 +42,11 @@ const Contact = () => {
     setIsSubmitting(true);
     setErrorMessage("");
 
-    // --- EMAILJS CONFIGURATION (UPDATED WITH YOUR KEYS) ---
+    // --- CREDENTIALS ---
     const SERVICE_ID = "service_4j965nq";
-    const TEMPLATE_ID = "template_8f3h7ch"; // The 'Contact Us' template ID
-    const PUBLIC_KEY = "Fp7LtB83Dsq81zYnB";
+    const TEMPLATE_ID = "template_8f3h7ch";
+    // Using .trim() to ensure no accidental spaces are included
+    const PUBLIC_KEY = "Fp7LtB83Dsq81zYnB".trim();
 
     if (form.current) {
       emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, form.current, PUBLIC_KEY).then(
@@ -55,7 +54,6 @@ const Contact = () => {
           console.log("Email sent successfully:", result.text);
           setIsSubmitting(false);
           setShowAlert(true);
-          // Reset form
           setFormData({
             name: "",
             email: "",
@@ -66,7 +64,8 @@ const Contact = () => {
         (error) => {
           console.error("Failed to send email:", error.text);
           setIsSubmitting(false);
-          setErrorMessage("Failed to send message. Please try again later.");
+          // Show the actual error message from EmailJS for better debugging
+          setErrorMessage("Failed: " + (error.text || "Invalid Keys"));
         }
       );
     }
@@ -97,7 +96,6 @@ const Contact = () => {
             </p>
           </div>
 
-          {/* Contact Cards Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto mb-16">
             {/* 1. Email */}
             <div className="bg-white rounded-2xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100">
@@ -217,7 +215,6 @@ const Contact = () => {
           </div>
 
           <div className="font-sans relative">
-            {/* Success Alert */}
             {showAlert && (
               <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
                 <div className="bg-white rounded-2xl p-8 max-w-md w-full relative shadow-2xl">
@@ -262,14 +259,12 @@ const Contact = () => {
               </div>
             )}
 
-            {/* Error Message */}
             {errorMessage && (
-              <div className="mb-4 p-4 text-red-700 bg-red-100 rounded-lg text-center">
+              <div className="mb-4 p-4 text-red-700 bg-red-100 rounded-lg text-center font-medium">
                 {errorMessage}
               </div>
             )}
 
-            {/* Real Email Form */}
             <div className="max-w-4xl mx-auto p-8 bg-white rounded-3xl shadow-xl border border-gray-100">
               <div className="text-center mb-8">
                 <h3 className="text-2xl font-bold text-gray-800">
@@ -291,7 +286,7 @@ const Contact = () => {
                     </label>
                     <input
                       type="text"
-                      name="name" // Matches {{name}} in EmailJS
+                      name="name"
                       id="name"
                       value={formData.name}
                       onChange={handleChange}
@@ -310,7 +305,7 @@ const Contact = () => {
                     </label>
                     <input
                       type="email"
-                      name="email" // Matches {{email}} in EmailJS
+                      name="email"
                       id="email"
                       value={formData.email}
                       onChange={handleChange}
@@ -331,7 +326,7 @@ const Contact = () => {
                   </label>
                   <input
                     type="text"
-                    name="title" // Matches {{title}} in EmailJS
+                    name="title"
                     id="title"
                     value={formData.title}
                     onChange={handleChange}
@@ -350,7 +345,7 @@ const Contact = () => {
                     Message
                   </label>
                   <textarea
-                    name="message" // Matches {{message}} in EmailJS
+                    name="message"
                     id="message"
                     rows={5}
                     value={formData.message}

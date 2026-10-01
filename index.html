@@ -1,27 +1,113 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
-    
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
-  />
-  <link rel="icon" href="/public/favicon.png" />
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/aos@2/dist/aos.css"
-  />
-    <title>MSR</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Ramachandramoorthi M — Software Engineer</title>
+    <meta
+      name="description"
+      content="Software engineer building fault-tolerant backends in Elixir & Phoenix and real-time interfaces in Vue and React. Currently architecting the Helpdesk platform for the Sastra Online Learning Platform at Ardhika Software Technologies."
+    />
+    <meta name="author" content="Ramachandramoorthi M" />
+    <meta name="theme-color" content="#0b0b0c" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f3f0ea" media="(prefers-color-scheme: light)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Ramachandramoorthi M — Software Engineer" />
+    <meta
+      property="og:description"
+      content="Systems that keep running. Elixir, Phoenix, Vue 3 and PostgreSQL — workflow engines, SLA automation and real-time dashboards."
+    />
+    <meta property="og:image" content="/og.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <script>
+      (function () {
+        var root = document.documentElement;
+        try {
+          var saved = localStorage.getItem('msr-theme');
+          var theme =
+            saved === 'light' || saved === 'dark'
+              ? saved
+              : window.matchMedia('(prefers-color-scheme: light)').matches
+                ? 'light'
+                : 'dark';
+          root.dataset.theme = theme;
+          if (sessionStorage.getItem('msr-booted')) root.dataset.boot = 'fast';
+        } catch (e) {
+          root.dataset.theme = 'dark';
+        }
+      })();
+    </script>
+
+    <style>
+      html { background: #0b0b0c; color: #edebe6; }
+      html[data-theme='light'] { background: #f3f0ea; color: #17150f; }
+      #boot {
+        position: fixed; inset: 0; z-index: 200; display: grid; place-items: center;
+        background: #0b0b0c; color: #edebe6;
+        font: 500 12px/1.6 ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+        letter-spacing: 0.04em;
+        clip-path: inset(0 0 0 0);
+        transition: clip-path 0.9s cubic-bezier(0.76, 0, 0.24, 1);
+      }
+      html[data-theme='light'] #boot { background: #f3f0ea; color: #17150f; }
+      #boot.is-leaving { clip-path: inset(0 0 100% 0); }
+      #boot .boot-inner { width: min(280px, 80vw); }
+      #boot .boot-mark { display: flex; align-items: center; gap: 8px; font-size: 13px; letter-spacing: 0.24em; margin-bottom: 20px; }
+      #boot .boot-mark i { width: 7px; height: 7px; border-radius: 50%; background: #ff6b35; animation: boot-pulse 1s ease-in-out infinite alternate; }
+      html[data-theme='light'] #boot .boot-mark i { background: #c2410c; }
+      #boot ol { list-style: none; margin: 0 0 18px; padding: 0; opacity: 0.55; }
+      #boot li::before { content: '[  ] '; white-space: pre; }
+      #boot li.is-done { opacity: 1; }
+      #boot li.is-done::before { content: '[ok] '; color: #73e2c0; }
+      html[data-theme='light'] #boot li.is-done::before { color: #0f7b62; }
+      #boot .boot-bar { height: 1px; background: currentColor; opacity: 0.15; position: relative; }
+      #boot .boot-bar b { position: absolute; inset: 0; background: #ff6b35; transform-origin: left; transform: scaleX(var(--p, 0.08)); transition: transform 0.4s ease; }
+      html[data-boot='fast'] #boot ol, html[data-boot='fast'] #boot .boot-bar { display: none; }
+      @keyframes boot-pulse { from { opacity: 0.35; } to { opacity: 1; } }
+      @media (prefers-reduced-motion: reduce) {
+        #boot { transition: opacity 0.2s linear; }
+        #boot.is-leaving { clip-path: none; opacity: 0; }
+        #boot .boot-mark i { animation: none; }
+      }
+    </style>
+    <noscript><style>#boot { display: none; }</style></noscript>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Ramachandramoorthi M",
+        "jobTitle": "Software Engineer",
+        "worksFor": { "@type": "Organization", "name": "Ardhika Software Technologies" },
+        "alumniOf": [
+          { "@type": "CollegeOrUniversity", "name": "SRM Institute of Science and Technology" },
+          { "@type": "CollegeOrUniversity", "name": "GTN Arts and Science College" }
+        ],
+        "email": "mailto:mrcmoorthi@gmail.com",
+        "sameAs": [
+          "https://github.com/MRAMACHANDRAMOORTHI",
+          "https://linkedin.com/in/ramachandramoorthi"
+        ],
+        "knowsAbout": ["Elixir", "Phoenix Framework", "Vue.js", "React", "PostgreSQL", "Spring Boot", "System Design"]
+      }
+    </script>
   </head>
   <body>
+    <div id="boot" aria-hidden="true">
+      <div class="boot-inner">
+        <div class="boot-mark">MSR <i></i></div>
+        <ol>
+          <li data-step="app">supervisor started</li>
+          <li data-step="fonts">typefaces loaded</li>
+          <li data-step="scene">scene ready</li>
+        </ol>
+        <div class="boot-bar"><b></b></div>
+      </div>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/isotope-layout@3/dist/isotope.pkgd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/aos@2/dist/aos.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/purecounterjs/dist/purecounter_vanilla.js"></script>
   </body>
 </html>

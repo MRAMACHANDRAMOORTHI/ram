@@ -11,6 +11,7 @@ import { scrollToSection } from '../../../lib/scroll';
 import { toneText } from '../../../lib/tones';
 import { cn } from '../../../lib/utils';
 import { Button } from '../../primitives/Button';
+import { ErrorBoundary } from '../../primitives/ErrorBoundary';
 import { SplitReveal } from '../../primitives/SplitReveal';
 import { HeadPoster } from './bobble/HeadPoster';
 
@@ -113,9 +114,12 @@ export function Hero() {
               <HeadPoster />
             </div>
             {load3d && (
-              <Suspense fallback={null}>
-                <BobbleStage ready={ready} onLive={() => setLive3d(true)} />
-              </Suspense>
+              // If the 3D scene ever fails, the poster above simply stays.
+              <ErrorBoundary fallback={null} onError={() => setLive3d(false)}>
+                <Suspense fallback={null}>
+                  <BobbleStage ready={ready} onLive={() => setLive3d(true)} />
+                </Suspense>
+              </ErrorBoundary>
             )}
           </m.div>
         </m.div>

@@ -303,6 +303,7 @@
   }
 
   html {
+    position: relative;
     background: var(--bg);
     color: var(--ink);
     -webkit-font-smoothing: antialiased;

@@ -197,6 +197,7 @@ export class BobbleScene {
   private reduced = false;
   private drewFirst = false;
   private prepared = false;
+  private disposed = false;
 
   // Rig
   private body = new Group();
@@ -280,6 +281,10 @@ export class BobbleScene {
   /** Load the face and compile shaders off the main thread before the first frame. */
   async prepare(faceUrl: string) {
     const tex = await new TextureLoader().loadAsync(faceUrl);
+    if (this.disposed) {
+      tex.dispose();
+      return;
+    }
     tex.colorSpace = SRGBColorSpace;
     tex.anisotropy = 4;
     this.headMat.map = tex;
@@ -294,6 +299,7 @@ export class BobbleScene {
       }
     });
     await this.renderer.compileAsync(this.scene, this.camera);
+    if (this.disposed) return;
     hidden.forEach((o) => (o.visible = false));
     this.prepared = true;
     this.requestFrame();
@@ -379,6 +385,7 @@ export class BobbleScene {
   }
 
   start() {
+    if (this.disposed) return;
     if (this.running || this.reduced) {
       if (this.reduced) this.requestFrame();
       return;
@@ -402,15 +409,26 @@ export class BobbleScene {
   }
 
   dispose() {
+    if (this.disposed) return;
+    this.disposed = true;
     this.stop();
     this.director.stop();
+    window.clearTimeout(this.boopTimer);
+    const textures = new Set<Texture>();
+    const materials = new Set<{ dispose: () => void }>();
     this.scene.traverse((o) => {
       const m = o as Mesh;
       m.geometry?.dispose();
-      const mat = m.material as { dispose?: () => void; map?: Texture | null } | undefined;
-      mat?.map?.dispose();
-      mat?.dispose?.();
+      const list = Array.isArray(m.material) ? m.material : m.material ? [m.material] : [];
+      for (const mat of list) {
+        materials.add(mat);
+        const map = (mat as { map?: Texture | null }).map;
+        if (map && (map as Texture).isTexture) textures.add(map);
+      }
     });
+    textures.forEach((t) => t.dispose());
+    materials.forEach((m) => m.dispose());
+    this.ramp.dispose();
     this.renderer.dispose();
   }
 
@@ -1143,7 +1161,7 @@ export class BobbleScene {
   }
 
   private render() {
-    if (!this.prepared) return;
+    if (!this.prepared || this.disposed) return;
     this.renderer.render(this.scene, this.camera);
     if (!this.drewFirst && this.headMat.map) {
       this.drewFirst = true;

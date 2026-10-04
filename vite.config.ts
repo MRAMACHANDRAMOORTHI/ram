@@ -2,7 +2,7 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
 
-/** Preload the three latin font files the first paint needs, so text never reflows under the loader. */
+/** Preload what the first paint needs: three latin font files (no reflow under the loader) and the hero's face. */
 function preloadCriticalFonts(): Plugin {
   let base = '/';
   const critical = [/geist-latin-wght-normal-.*\.woff2$/, /geist-mono-latin-wght-normal-.*\.woff2$/, /instrument-serif-latin-400-italic-.*\.woff2$/];
@@ -16,14 +16,24 @@ function preloadCriticalFonts(): Plugin {
       order: 'post',
       handler(html, ctx) {
         if (!ctx.bundle) return html;
-        const files = Object.keys(ctx.bundle).filter((f) => critical.some((re) => re.test(f)));
+        const files = Object.keys(ctx.bundle);
+        const fonts = files.filter((f) => critical.some((re) => re.test(f)));
+        // The bobblehead's face texture: fetch it alongside the fonts.
+        const portrait = files.filter((f) => /head-.*\.webp$/.test(f));
         return {
           html,
-          tags: files.map((f) => ({
-            tag: 'link',
-            attrs: { rel: 'preload', as: 'font', type: 'font/woff2', href: `${base}${f}`, crossorigin: '' },
-            injectTo: 'head' as const,
-          })),
+          tags: [
+            ...fonts.map((f) => ({
+              tag: 'link',
+              attrs: { rel: 'preload', as: 'font', type: 'font/woff2', href: `${base}${f}`, crossorigin: '' },
+              injectTo: 'head' as const,
+            })),
+            ...portrait.map((f) => ({
+              tag: 'link',
+              attrs: { rel: 'preload', as: 'image', type: 'image/webp', href: `${base}${f}`, fetchpriority: 'high' },
+              injectTo: 'head' as const,
+            })),
+          ],
         };
       },
     },

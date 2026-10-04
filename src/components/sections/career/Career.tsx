@@ -6,6 +6,7 @@ import type { Role } from '../../../content/types';
 import { useReducedMotion } from '../../../hooks/useMediaQuery';
 import { EASE_OUT_EXPO } from '../../../lib/motion';
 import { scrollToElement } from '../../../lib/scroll';
+import { toneStyle } from '../../../lib/tones';
 import { cn, formatMonth, formatSpan } from '../../../lib/utils';
 import { useUI } from '../../../providers/UIProvider';
 import { Chip } from '../../primitives/Chip';
@@ -13,6 +14,7 @@ import { Counter } from '../../primitives/Counter';
 import { Icon } from '../../primitives/Icon';
 import { Reveal } from '../../primitives/Reveal';
 import { SectionHeader } from '../../primitives/SectionHeader';
+import { ToneSection } from '../../primitives/ToneSection';
 
 export function Career() {
   const listRef = useRef<HTMLOListElement>(null);
@@ -40,7 +42,7 @@ export function Career() {
   };
 
   return (
-    <section id="career" aria-labelledby="career-title" className="section-pad relative border-t border-line">
+    <ToneSection id="career" aria-labelledby="career-title" className="section-pad border-t border-line">
       <div className="shell">
         <SectionHeader
           index="03"
@@ -60,7 +62,7 @@ export function Career() {
             <span aria-hidden="true" className="absolute top-2 bottom-2 left-[5px] w-px bg-line lg:hidden" />
             <m.span
               aria-hidden="true"
-              className="absolute top-2 bottom-2 left-[5px] w-px origin-top bg-accent lg:hidden"
+              className="absolute top-2 bottom-2 left-[5px] w-px origin-top bg-gradient-to-b from-systems via-automation to-data lg:hidden"
               style={{ scaleY: scrollYProgress }}
             />
             {roles.map((role, i) => (
@@ -69,7 +71,7 @@ export function Career() {
           </ol>
         </div>
       </div>
-    </section>
+    </ToneSection>
   );
 }
 
@@ -85,7 +87,7 @@ function StickyPanel({
   const reduced = useReducedMotion();
   const role = roles[active];
   return (
-    <div className="sticky top-[calc(var(--nav-h)+3rem)]">
+    <div className="sticky top-[calc(var(--nav-h)+3rem)]" style={toneStyle(role.tone)}>
       <p className="text-meta text-faint">Now reading</p>
       <div className="relative mt-4 h-[clamp(3.75rem,2.6rem+3vw,5.75rem)] overflow-hidden">
         <AnimatePresence mode="popLayout" initial={false}>
@@ -98,7 +100,7 @@ function StickyPanel({
             className="absolute inset-0 text-[clamp(3.25rem,2.2rem+3vw,5.25rem)] leading-none font-medium tracking-[-0.05em] whitespace-nowrap"
           >
             {role.companyShort}
-            <span className="text-accent">.</span>
+            <span className="text-tone">.</span>
           </m.p>
         </AnimatePresence>
       </div>
@@ -109,19 +111,20 @@ function StickyPanel({
 
       <ol className="relative mt-12">
         <span className="absolute top-0 bottom-0 left-[5px] w-px bg-line" />
-        <m.span className="absolute top-0 bottom-0 left-[5px] w-px origin-top bg-accent" style={{ scaleY: progress }} />
+        <m.span className="absolute top-0 bottom-0 left-[5px] w-px origin-top bg-gradient-to-b from-systems via-automation to-data" style={{ scaleY: progress }} />
         {roles.map((r, i) => (
           <li key={r.id}>
             <button
               type="button"
               tabIndex={-1}
               onClick={() => onSelect(i)}
+              style={toneStyle(r.tone)}
               className="group relative flex w-full items-start gap-5 py-4 text-left"
             >
               <span
                 className={cn(
                   'relative z-10 mt-1.5 size-[11px] shrink-0 rounded-full border transition-[background-color,border-color,scale] duration-500',
-                  i === active ? 'scale-125 border-accent bg-accent' : 'border-line-strong bg-bg',
+                  i === active ? 'scale-125 border-tone bg-tone shadow-[0_0_0_4px_color-mix(in_oklab,var(--tone)_20%,transparent)]' : 'border-line-strong bg-bg group-hover:border-tone',
                 )}
               />
               <span>
@@ -147,22 +150,22 @@ function StickyPanel({
 
 function RoleEntry({ role, index, active }: { role: Role; index: number; active: boolean }) {
   const { openCase } = useUI();
-  const project = role.project ? projectBySlug(role.project) : undefined;
+  const linked = (role.projects ?? []).map(projectBySlug).filter((p) => p !== undefined);
 
   return (
-    <li data-role-index={index} className="relative pb-16 pl-8 last:pb-0 lg:pb-24 lg:pl-0">
+    <li data-role-index={index} style={toneStyle(role.tone)} className="relative pb-16 pl-8 last:pb-0 lg:pb-24 lg:pl-0">
       <span
         aria-hidden="true"
         className={cn(
           'absolute top-2 left-0 size-[11px] rounded-full border transition-colors duration-500 lg:hidden',
-          active ? 'border-accent bg-accent' : 'border-line-strong bg-bg',
+          active ? 'border-tone bg-tone' : 'border-line-strong bg-bg',
         )}
       />
       <Reveal>
         <article className={cn('transition-opacity duration-700 lg:opacity-45', active && 'lg:opacity-100')}>
           <header className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
             <div className="flex items-center gap-4">
-              <span className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-2xl border border-line bg-white p-1.5">
+              <span className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-2xl border border-tone/40 bg-white p-1.5 shadow-[0_8px_24px_-12px_var(--tone)]">
                 <img src={role.logo} alt="" width={56} height={56} loading="lazy" className="size-full object-contain" />
               </span>
               <div>
@@ -204,7 +207,7 @@ function RoleEntry({ role, index, active }: { role: Role; index: number; active:
                   <Counter
                     value={i.value}
                     suffix={i.suffix}
-                    className="block text-[clamp(3rem,2rem+3vw,4.5rem)] leading-none font-medium tracking-[-0.05em] text-accent"
+                    className="block text-[clamp(3rem,2rem+3vw,4.5rem)] leading-none font-medium tracking-[-0.05em] text-tone"
                   />
                   <span className="text-meta mt-2 block text-faint">{i.label}</span>
                 </p>
@@ -215,7 +218,7 @@ function RoleEntry({ role, index, active }: { role: Role; index: number; active:
           <ul className="mt-8 max-w-2xl">
             {role.highlights.map((h) => (
               <li key={h} className="flex gap-4 border-t border-line py-3.5 text-[0.9375rem] leading-relaxed text-muted">
-                <span aria-hidden="true" className="mt-[0.7em] h-px w-3 shrink-0 bg-accent" />
+                <span aria-hidden="true" className="mt-[0.7em] h-px w-3 shrink-0 bg-tone" />
                 {h}
               </li>
             ))}
@@ -227,18 +230,26 @@ function RoleEntry({ role, index, active }: { role: Role; index: number; active:
             ))}
           </div>
 
-          {project && (
-            <button
-              type="button"
-              onClick={(e) => openCase(project.slug, e.currentTarget.getBoundingClientRect())}
-              className="group mt-8 inline-flex items-center gap-3 text-[0.9375rem] text-ink"
-              aria-haspopup="dialog"
-            >
-              <span className="link-sweep pb-0.5">Read the {project.title} case study</span>
-              <span className="grid size-8 place-items-center rounded-full border border-line-strong transition-colors duration-500 group-hover:border-accent group-hover:bg-accent group-hover:text-accent-ink">
-                <Icon name="arrow-right" size={14} />
-              </span>
-            </button>
+          {linked.length > 0 && (
+            <div className="mt-8 flex flex-col items-start gap-3">
+              {linked.map((project) => (
+                <button
+                  key={project.slug}
+                  type="button"
+                  onClick={(e) => openCase(project.slug, e.currentTarget.getBoundingClientRect())}
+                  style={toneStyle(project.tone)}
+                  className="group inline-flex items-center gap-3 text-[0.9375rem] text-ink"
+                  aria-haspopup="dialog"
+                >
+                  <span className="grid size-8 place-items-center rounded-full border border-line-strong transition-colors duration-500 group-hover:border-tone group-hover:bg-tone group-hover:text-bg">
+                    <Icon name="arrow-right" size={14} />
+                  </span>
+                  <span className="link-sweep pb-0.5">
+                    <span className="text-tone">●</span> {project.title} case study
+                  </span>
+                </button>
+              ))}
+            </div>
           )}
         </article>
       </Reveal>

@@ -1,21 +1,25 @@
 import { education } from '../../../content/experience';
 import { profile } from '../../../content/profile';
+import type { Tone } from '../../../content/types';
+import { toneText } from '../../../lib/tones';
+import { cn } from '../../../lib/utils';
 import { Counter } from '../../primitives/Counter';
 import { Icon } from '../../primitives/Icon';
 import { RevealGroup, RevealItem } from '../../primitives/Reveal';
 import { SectionHeader } from '../../primitives/SectionHeader';
+import { ToneSection } from '../../primitives/ToneSection';
 import { IdentityCard } from './IdentityCard';
 import { ScrollStatement } from './ScrollStatement';
 
-const glance = [
-  { value: 3, suffix: '', label: 'Engineering roles since May 2024' },
-  { value: 30, suffix: '%', label: 'Engagement lift on CICT’s learning platform' },
-  { value: 25, suffix: '%', label: 'Faster data retrieval after MySQL tuning at RETECH' },
+const glance: Array<{ value: number; suffix: string; label: string; tone: Tone }> = [
+  { value: 3, suffix: '', label: 'Engineering roles since May 2024', tone: 'human' },
+  { value: 30, suffix: '%', label: 'Engagement lift on CICT’s learning platform', tone: 'automation' },
+  { value: 25, suffix: '%', label: 'Faster data retrieval after MySQL tuning at RETECH', tone: 'data' },
 ];
 
 export function Profile() {
   return (
-    <section id="profile" aria-labelledby="profile-title" className="section-pad relative">
+    <ToneSection id="profile" aria-labelledby="profile-title" className="section-pad">
       <div className="shell">
         <SectionHeader index="01" label="Profile" id="profile-title" title={'Most of my work is the part\nyou *don’t see.*'} />
 
@@ -43,7 +47,7 @@ export function Profile() {
                   <Counter
                     value={g.value}
                     suffix={g.suffix}
-                    className="block text-[clamp(2.25rem,1.6rem+2.4vw,3.5rem)] leading-none font-medium tracking-[-0.04em]"
+                    className={cn('block text-[clamp(2.25rem,1.6rem+2.4vw,3.5rem)] leading-none font-medium tracking-[-0.04em]', toneText[g.tone])}
                   />
                   <span className="mt-3 block max-w-[14rem] text-[0.8125rem] leading-snug text-muted sm:text-sm">{g.label}</span>
                 </RevealItem>
@@ -88,6 +92,6 @@ export function Profile() {
           </div>
         </div>
       </div>
-    </section>
+    </ToneSection>
   );
 }

@@ -194,7 +194,7 @@ export default function LifecycleSimulator() {
                 key={tier}
                 type="button"
                 onClick={() => createTicket(tier)}
-                className="text-label inline-flex h-10 items-center gap-1.5 rounded-full border border-line-strong px-3.5 text-ink transition-colors hover:border-accent hover:bg-accent hover:text-accent-ink"
+                className="text-label inline-flex h-10 items-center gap-1.5 rounded-full border border-line-strong px-3.5 text-ink transition-colors hover:border-human hover:bg-human hover:text-bg"
               >
                 <Icon name="plus" size={14} /> SLA {tier}h
               </button>

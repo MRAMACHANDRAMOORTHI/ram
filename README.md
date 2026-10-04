@@ -46,9 +46,16 @@ src/
     sections/     hero (canvas scene), profile, work (+ case study overlay), career, approach (+ simulator), stack, contact
 ```
 
-- **Hero scene** (`sections/hero/stackScene.ts`): a dependency-free Canvas 2D renderer with manual
-  perspective projection. It pauses off-screen and in hidden tabs, and renders one static frame under
-  `prefers-reduced-motion`.
+- **Hero bobblehead** (`sections/hero/bobble/`): a Three.js scene — a real-face sprite (cut out from the
+  portrait) on a toon-shaded body, with four comedy gags (bug squash, Friday deploy, coffee overload,
+  rubber duck) driven by a small timeline `Director`. The chunk lazy-loads after first paint, compiles
+  shaders asynchronously, pauses off-screen and in hidden tabs, and falls back to a bobbing 2D poster
+  without WebGL or under `prefers-reduced-motion` (gag buttons then show the punchline only).
+- **Domain tones** (`styles/index.css`, `lib/tones.ts`): systems, interface, data, automation, signal and
+  human colours, each tied to a concept. Sections, projects, roles and stack groups carry a tone; every
+  text tone passes WCAG AA in both themes.
+- **Illustrations** (`components/visuals/`): private products (ekVana LMS, AIMS) are shown with UI
+  illustrations rebuilt from their documentation and labelled as such — never as screenshots.
 - **Lifecycle simulator** (`sections/approach/simulation.ts`): a pure reducer modelling the Helpdesk ticket
   workflow (round-robin assigner, SLA job, resolution stats). Lazy-loaded and warmed at idle time.
 - **Case studies** open in a dialog synced to `?case=<slug>`, so they are shareable and the back button
@@ -75,7 +82,7 @@ domain is known.
 
 ## Quality bar
 
-- Lighthouse-style lab run on the production build: LCP ≈ 0.3 s on desktop and ≈ 1.0 s on mobile
-  (4× CPU, slow 4G); CLS 0; TBT under 120 ms throttled; scrolling at about 60 fps.
+- Lab run on the production build: desktop LCP ≈ 0.4 s, TBT < 70 ms; mobile (4× CPU, slow 4G) LCP ≈ 2.6 s
+  and TBT ≈ 0.75 s — most of that is the lazy-loaded 3D engine; CLS 0 everywhere; scrolling at about 60 fps.
 - Keyboard: skip link, visible focus, focus trapping and restoring in dialogs, ⌘/Ctrl K palette.
-- Both themes are designed separately ("graphite" dark, "paper" light) and meet WCAG AA contrast for text.
+- Both themes are designed separately ("neon night" dark, "candy" light) and meet WCAG AA contrast for text.

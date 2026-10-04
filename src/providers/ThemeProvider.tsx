@@ -10,7 +10,7 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 const STORAGE_KEY = 'msr-theme';
-const BG: Record<Theme, string> = { dark: '#0b0b0c', light: '#f3f0ea' };
+const BG: Record<Theme, string> = { dark: '#080a1c', light: '#fff8f0' };
 
 function readStored(): Theme | null {
   try {

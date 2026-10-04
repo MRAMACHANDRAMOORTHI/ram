@@ -34,7 +34,7 @@ const base =
   'group/btn relative inline-flex select-none items-center justify-center gap-2.5 overflow-hidden rounded-full font-medium tracking-[-0.01em] transition-[color,border-color,opacity] duration-500 ease-out-expo disabled:pointer-events-none disabled:opacity-50';
 
 const variants: Record<Variant, string> = {
-  primary: 'bg-accent text-accent-ink hover:text-bg',
+  primary: 'bg-[linear-gradient(110deg,var(--human),var(--systems))] text-accent-ink shadow-[0_10px_30px_-10px_var(--human)] hover:text-bg',
   secondary: 'border border-line-strong text-ink hover:text-bg hover:border-ink',
   quiet: 'text-ink hover:text-bg',
 };

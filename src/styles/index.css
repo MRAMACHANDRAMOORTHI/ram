@@ -13,58 +13,76 @@
 :root,
 :root[data-theme='dark'] {
   color-scheme: dark;
-  /* Graphite: a near-black with a warm undertone, lit by ember */
-  --bg: #0b0b0c;
-  --bg-raised: #111113;
-  --surface: #151517;
-  --surface-2: #1c1c1f;
-  --glass: rgb(21 21 23 / 0.62);
-  --line: rgb(237 235 230 / 0.08);
-  --line-strong: rgb(237 235 230 / 0.16);
-  --ink: #edebe6;
-  --muted: #a3a09a;
-  --faint: #85827b;
-  --accent: #ff6b35;
-  --accent-ink: #160903;
-  --accent-soft: rgb(255 107 53 / 0.12);
-  --signal: #73e2c0;
-  --signal-soft: rgb(115 226 192 / 0.12);
-  --danger: #ff8a7a;
-  --glow-accent: rgb(255 107 53 / 0.28);
-  --glow-signal: rgb(115 226 192 / 0.18);
-  --elev-lg: 0 30px 80px -20px rgb(0 0 0 / 0.65), 0 0 0 1px rgb(255 255 255 / 0.04);
-  --elev-md: 0 14px 40px -12px rgb(0 0 0 / 0.6);
-  --grain-opacity: 0.055;
-  --card-paper: #ece8df;
-  --card-paper-ink: #17150f;
+  /* Neon pop: deep navy night, lit in electric colour. */
+  --bg: #080a1c;
+  --bg-raised: #0d1026;
+  --surface: #121534;
+  --surface-2: #191d42;
+  --glass: rgb(18 21 52 / 0.62);
+  --line: rgb(196 200 255 / 0.1);
+  --line-strong: rgb(196 200 255 / 0.2);
+  --ink: #f3f2ff;
+  --muted: #aeb0d6;
+  --faint: #8a8dc0;
+  --accent: #ff4fa3;
+  --accent-ink: #1b0410;
+  --accent-soft: rgb(255 79 163 / 0.14);
+  --signal: #3df2c2;
+  --signal-soft: rgb(61 242 194 / 0.12);
+  --danger: #ff7a8a;
+  --glow-accent: rgb(255 79 163 / 0.3);
+  --glow-signal: rgb(61 242 194 / 0.2);
+  --elev-lg: 0 30px 80px -20px rgb(2 3 15 / 0.75), 0 0 0 1px rgb(196 200 255 / 0.05);
+  --elev-md: 0 14px 40px -12px rgb(2 3 15 / 0.7);
+  --grain-opacity: 0.045;
+  --card-paper: #f4f1ff;
+  --card-paper-ink: #1a1433;
+
+  /* Domain tones. Each names a concept, not a decoration:
+     systems (backend) · interface (frontend) · data · automation (jobs, workflows, AI)
+     · signal (responses, healthy state) · human (people, profile, career). */
+  --systems: #a48bff;
+  --interface: #2fd8f2;
+  --data: #a8ea3f;
+  --automation: #ffc23a;
+  --human: #ff5fa8;
+  --tone: var(--systems);
+  --tone-glow-strength: 28%;
 }
 
 :root[data-theme='light'] {
   color-scheme: light;
-  /* Paper: warm stock, carbon ink, a burnt-ember accent */
-  --bg: #f3f0ea;
-  --bg-raised: #f8f6f1;
-  --surface: #fbfaf7;
-  --surface-2: #ebe7df;
-  --glass: rgb(248 246 241 / 0.72);
-  --line: rgb(23 21 15 / 0.1);
-  --line-strong: rgb(23 21 15 / 0.2);
-  --ink: #17150f;
-  --muted: #57534b;
-  --faint: #6f6b62;
-  --accent: #c2410c;
-  --accent-ink: #fff7f2;
-  --accent-soft: rgb(194 65 12 / 0.09);
-  --signal: #0f7b62;
-  --signal-soft: rgb(15 123 98 / 0.1);
-  --danger: #b42318;
-  --glow-accent: rgb(194 65 12 / 0.14);
-  --glow-signal: rgb(15 123 98 / 0.1);
-  --elev-lg: 0 30px 70px -28px rgb(60 45 20 / 0.35), 0 0 0 1px rgb(23 21 15 / 0.06);
-  --elev-md: 0 14px 34px -16px rgb(60 45 20 / 0.3);
-  --grain-opacity: 0.09;
-  --card-paper: #fbfaf7;
-  --card-paper-ink: #17150f;
+  /* Candy: warm cream with saturated, cartoon-bright colour (all ≥ 4.5:1 on every surface). */
+  --bg: #fff8f0;
+  --bg-raised: #fffcf7;
+  --surface: #ffffff;
+  --surface-2: #f6ecdf;
+  --glass: rgb(255 252 247 / 0.74);
+  --line: rgb(26 20 51 / 0.1);
+  --line-strong: rgb(26 20 51 / 0.2);
+  --ink: #1a1433;
+  --muted: #514a6b;
+  --faint: #655e80;
+  --accent: #cc1f68;
+  --accent-ink: #ffffff;
+  --accent-soft: rgb(204 31 104 / 0.09);
+  --signal: #0b7a5a;
+  --signal-soft: rgb(11 122 90 / 0.1);
+  --danger: #b4232f;
+  --glow-accent: rgb(204 31 104 / 0.16);
+  --glow-signal: rgb(11 122 90 / 0.12);
+  --elev-lg: 0 30px 70px -28px rgb(70 40 110 / 0.3), 0 0 0 1px rgb(26 20 51 / 0.06);
+  --elev-md: 0 14px 34px -16px rgb(70 40 110 / 0.26);
+  --grain-opacity: 0.06;
+  --card-paper: #ffffff;
+  --card-paper-ink: #1a1433;
+
+  --systems: #6a3be0;
+  --interface: #07709a;
+  --data: #3b7a0b;
+  --automation: #9e5800;
+  --human: #c81e6a;
+  --tone-glow-strength: 16%;
 }
 
 @theme inline {
@@ -91,6 +109,13 @@
   --color-danger: var(--danger);
   --color-paper: var(--card-paper);
   --color-paper-ink: var(--card-paper-ink);
+  --color-systems: var(--systems);
+  --color-interface: var(--interface);
+  --color-data: var(--data);
+  --color-automation: var(--automation);
+  --color-human: var(--human);
+  /* Contextual tone: set --tone on a section, card or dialog and children inherit it. */
+  --color-tone: var(--tone);
 
   --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'Geist Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
@@ -204,7 +229,7 @@
     border-radius: inherit;
     background: radial-gradient(
       420px circle at var(--mx, 50%) var(--my, -40%),
-      var(--glow-accent),
+      color-mix(in oklab, var(--tone) var(--tone-glow-strength), transparent),
       transparent 55%
     );
     opacity: 0;
@@ -216,6 +241,21 @@
   &:focus-within::before {
     opacity: 1;
   }
+}
+
+/* Soft pool of the local --tone, for section ambience (static: no repaint cost). */
+@utility tone-ambient {
+  background:
+    radial-gradient(42% 38% at 12% 0%, color-mix(in oklab, var(--tone) var(--tone-glow-strength), transparent), transparent 70%),
+    radial-gradient(30% 30% at 92% 12%, color-mix(in oklab, var(--tone) calc(var(--tone-glow-strength) / 2), transparent), transparent 70%);
+}
+
+/* Text filled with a slow light sweep between tones (used for a single keyword at a time). */
+@utility text-tone-gradient {
+  background-image: linear-gradient(100deg, var(--human), var(--systems) 50%, var(--interface));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 @utility mask-fade-x {
@@ -385,7 +425,7 @@
 /* Flash used by the lifecycle simulator when a transition fires */
 @keyframes edge-flash {
   0% {
-    stroke: var(--accent);
+    stroke: var(--flash, var(--accent));
     stroke-opacity: 1;
     stroke-width: 2.5;
   }
@@ -398,8 +438,8 @@
 
 @keyframes node-flash {
   0% {
-    stroke: var(--accent);
-    fill: var(--accent-soft);
+    stroke: var(--flash, var(--accent));
+    fill: color-mix(in oklab, var(--flash, var(--accent)) 14%, var(--surface));
   }
   100% {
     stroke: var(--line-strong);
@@ -429,6 +469,51 @@
 @keyframes dash-flow {
   to {
     stroke-dashoffset: -18;
+  }
+}
+
+/* Comic speech bubbles and FX words in the hero. */
+.bubble-pop {
+  animation: bubble-pop 0.42s var(--ease-spring) both;
+  transform-origin: 0% 100%;
+}
+.fx-pop {
+  animation: fx-pop 0.5s var(--ease-spring) both;
+}
+@keyframes bubble-pop {
+  from {
+    opacity: 0;
+    scale: 0.6;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+@keyframes fx-pop {
+  0% {
+    opacity: 0;
+    scale: 0.3;
+  }
+  60% {
+    opacity: 1;
+    scale: 1.15;
+  }
+  100% {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@keyframes poster-bob {
+  0%,
+  100% {
+    translate: 0 0;
+    rotate: -2deg;
+  }
+  50% {
+    translate: 0 -6px;
+    rotate: 2deg;
   }
 }
 

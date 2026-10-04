@@ -1,3 +1,4 @@
+import type { Tone } from '../../../content/types';
 import type { Sim, TicketState, TransitionKey } from './simulation';
 
 const NODE_W = 104;
@@ -15,6 +16,26 @@ const nodes: Record<TicketState, { x: number; y: number; label: string }> = {
 };
 
 type Anchor = 'start' | 'middle' | 'end';
+/** What drives each transition: a job (automation), a person (human) or a resolution (signal). */
+const EDGE_TONE: Record<string, Tone> = {
+  'new>open': 'human',
+  'open>assigned': 'automation',
+  'assigned>resolved': 'signal',
+  'resolved>closed': 'automation',
+  'assigned>overdue': 'systems',
+  'overdue>resolved': 'signal',
+  'resolved>assigned': 'human',
+  'closed>assigned': 'human',
+};
+
+const NODE_TONE: Record<TicketState, Tone> = {
+  open: 'human',
+  assigned: 'automation',
+  overdue: 'systems',
+  resolved: 'signal',
+  closed: 'data',
+};
+
 const edges: Array<{ key: TransitionKey; d: string; label: string; lx: number; ly: number; anchor: Anchor }> = [
   { key: 'new>open', d: `M14,${TOP} L${110 - half - 4},${TOP}`, label: 'new', lx: 14, ly: TOP - 8, anchor: 'start' },
   { key: 'open>assigned', d: `M${110 + half},${TOP} L${300 - half - 4},${TOP}`, label: 'round-robin', lx: 205, ly: TOP - 8, anchor: 'middle' },
@@ -64,22 +85,25 @@ export function StateDiagram({ sim, counts }: { sim: Sim; counts: Record<TicketS
         <marker id="fsm-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
           <path d="M0,0 L8,4 L0,8 z" className="fill-line-strong" />
         </marker>
-        <marker id="fsm-arrow-hot" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-          <path d="M0,0 L8,4 L0,8 z" className="fill-accent" />
-        </marker>
+        {(['human', 'automation', 'signal', 'systems'] as Tone[]).map((t) => (
+          <marker key={t} id={`fsm-arrow-${t}`} viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M0,0 L8,4 L0,8 z" fill={`var(--${t})`} />
+          </marker>
+        ))}
       </defs>
 
       {edges.map((e) => {
         const hot = sim.flashes.includes(e.key);
+        const tone = EDGE_TONE[e.key];
         return (
-          <g key={e.key}>
+          <g key={e.key} style={{ ['--flash' as string]: `var(--${tone})` }}>
             <path
               key={hot ? `${e.key}-${sim.flashId}` : e.key}
               d={e.d}
               fill="none"
               className="stroke-line-strong"
               strokeWidth={1.25}
-              markerEnd={`url(#${hot ? 'fsm-arrow-hot' : 'fsm-arrow'})`}
+              markerEnd={`url(#${hot ? `fsm-arrow-${tone}` : 'fsm-arrow'})`}
               style={hot ? { animation: 'edge-flash 1.1s ease-out' } : undefined}
             />
             <text x={e.lx} y={e.ly} textAnchor={e.anchor} className="fill-faint font-mono text-[10px]">
@@ -93,7 +117,7 @@ export function StateDiagram({ sim, counts }: { sim: Sim; counts: Record<TicketS
         const n = nodes[id];
         const hot = sim.flashes.some((f) => f.endsWith(`>${id}`));
         return (
-          <g key={id} transform={`translate(${n.x - half}, ${n.y - NODE_H / 2})`}>
+          <g key={id} transform={`translate(${n.x - half}, ${n.y - NODE_H / 2})`} style={{ ['--flash' as string]: `var(--${NODE_TONE[id]})` }}>
             <rect
               key={hot ? `hot-${sim.flashId}` : 'idle'}
               width={NODE_W}
@@ -103,14 +127,15 @@ export function StateDiagram({ sim, counts }: { sim: Sim; counts: Record<TicketS
               strokeWidth={1}
               style={hot ? { animation: 'node-flash 1.2s ease-out' } : undefined}
             />
-            <text x={14} y={NODE_H / 2 + 4} className="fill-ink text-[12.5px] font-medium">
+            <circle cx={12} cy={NODE_H / 2} r={3} fill={`var(--${NODE_TONE[id]})`} />
+            <text x={22} y={NODE_H / 2 + 4} className="fill-ink text-[12.5px] font-medium">
               {n.label}
             </text>
             <text
               x={NODE_W - 14}
               y={NODE_H / 2 + 4}
               textAnchor="end"
-              className={`font-mono text-[12px] ${id === 'overdue' && counts[id] > 0 ? 'fill-accent' : 'fill-muted'}`}
+              className={`font-mono text-[12px] ${id === 'overdue' && counts[id] > 0 ? 'fill-systems' : 'fill-muted'}`}
             >
               {counts[id]}
             </text>

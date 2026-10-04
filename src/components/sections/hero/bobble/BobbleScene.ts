@@ -1,0 +1,1153 @@
+/**
+ * Bobblehead hero: a real-face sprite on a toon-shaded 3D body, behind a
+ * sticker-covered laptop, with four comedy gags. Plain Three.js, lazy-loaded,
+ * paused off-screen; all geometry is low-poly and shadows are faked with blobs.
+ */
+import {
+  AdditiveBlending,
+  BoxGeometry,
+  CanvasTexture,
+  CapsuleGeometry,
+  Color,
+  ConeGeometry,
+  CylinderGeometry,
+  DataTexture,
+  DirectionalLight,
+  Group,
+  HemisphereLight,
+  Mesh,
+  MeshBasicMaterial,
+  MeshToonMaterial,
+  NearestFilter,
+  Object3D,
+  PerspectiveCamera,
+  PlaneGeometry,
+  PointLight,
+  Quaternion,
+  Raycaster,
+  RedFormat,
+  Scene,
+  Shape,
+  ShapeGeometry,
+  SphereGeometry,
+  Sprite,
+  SpriteMaterial,
+  SRGBColorSpace,
+  TextureLoader,
+  TorusGeometry,
+  Vector2,
+  Vector3,
+  WebGLRenderer,
+  type Texture,
+} from 'three';
+import { BOOPS, Director, type Gag, type GagId } from './gags';
+
+export interface Anchor {
+  x: number;
+  y: number;
+  visible: boolean;
+}
+
+export interface SceneCallbacks {
+  onBubble: (who: 'me' | 'duck', text: string | null) => void;
+  onFx: (text: string | null, tone?: 'pink' | 'amber' | 'lime' | 'cyan') => void;
+  onAnchors: (me: Anchor, duck: Anchor, fx: Anchor) => void;
+  onGag: (id: GagId | null) => void;
+  onFirstFrame: () => void;
+}
+
+type Hit = 'head' | 'body' | 'mug' | 'button' | 'duck' | 'laptop' | 'bug' | null;
+
+const UP = new Vector3(0, 1, 0);
+const DESK_Y = 0.75;
+const HEAD_ANCHOR = new Vector3(0, 1.96, 0.02);
+const HEAD_H = 1.62;
+const HEAD_W = HEAD_H * (440 / 562);
+const LOOK = new Vector3(0, 2.02, 0.4);
+
+const PALETTE = {
+  suit: '#26306e',
+  lapel: '#1a2154',
+  shirt: '#f4f2ff',
+  tie: '#2f63ff',
+  skin: '#c88a62',
+  chair: '#3a2a86',
+  deskTop: '#2b2266',
+  deskFront: '#1c1747',
+  laptop: '#3b4063',
+  keys: '#23263d',
+  mug: '#f7f5ff',
+  mugBand: '#ff4fa3',
+  coffee: '#5b3420',
+  duck: '#ffd23f',
+  beak: '#ff8a1f',
+  bug: '#e23b4e',
+  bugDark: '#2a1420',
+  rack: '#2b2f52',
+  extinguisher: '#e5263b',
+  button: '#ff3b5c',
+  buttonBase: '#3b4063',
+};
+
+const rand = (a: number, b: number) => a + Math.random() * (b - a);
+const clamp01 = (v: number) => (v < 0 ? 0 : v > 1 ? 1 : v);
+const ease = (t: number) => 1 - Math.pow(1 - clamp01(t), 3);
+const backOut = (t: number) => {
+  const x = clamp01(t) - 1;
+  return 1 + 2.4 * x * x * x + 1.4 * x * x;
+};
+
+/** Critically-under-damped spring for the bobble. */
+class Spring {
+  x: number;
+  v = 0;
+  target: number;
+  private k: number;
+  private c: number;
+  constructor(x = 0, k = 70, c = 7) {
+    this.x = x;
+    this.target = x;
+    this.k = k;
+    this.c = c;
+  }
+  kick(v: number) {
+    this.v += v;
+  }
+  step(dt: number) {
+    this.v += ((this.target - this.x) * this.k - this.v * this.c) * dt;
+    this.x += this.v * dt;
+  }
+}
+
+function toonRamp() {
+  const t = new DataTexture(new Uint8Array([70, 150, 220, 255]), 4, 1, RedFormat);
+  t.minFilter = NearestFilter;
+  t.magFilter = NearestFilter;
+  t.generateMipmaps = false;
+  t.needsUpdate = true;
+  return t;
+}
+
+function radialTexture(inner: string, outer: string, size = 64) {
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const g = c.getContext('2d')!;
+  const grad = g.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
+  grad.addColorStop(0, inner);
+  grad.addColorStop(1, outer);
+  g.fillStyle = grad;
+  g.fillRect(0, 0, size, size);
+  const t = new CanvasTexture(c);
+  t.colorSpace = SRGBColorSpace;
+  return t;
+}
+
+/** The back of the laptop lid — the part visitors actually see — covered in dev stickers. */
+function lidTexture() {
+  const c = document.createElement('canvas');
+  c.width = 512;
+  c.height = 320;
+  const g = c.getContext('2d')!;
+  g.fillStyle = PALETTE.laptop;
+  g.fillRect(0, 0, 512, 320);
+  const sticker = (x: number, y: number, w: number, h: number, bg: string, fg: string, text: string, r = 18, rot = 0, size = 28) => {
+    g.save();
+    g.translate(x + w / 2, y + h / 2);
+    g.rotate(rot);
+    g.fillStyle = 'rgba(0,0,0,0.25)';
+    g.beginPath();
+    g.roundRect(-w / 2 + 4, -h / 2 + 6, w, h, r);
+    g.fill();
+    g.fillStyle = bg;
+    g.beginPath();
+    g.roundRect(-w / 2, -h / 2, w, h, r);
+    g.fill();
+    g.fillStyle = fg;
+    g.font = `800 ${size}px system-ui, "Segoe UI", sans-serif`;
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    g.fillText(text, 0, 2);
+    g.restore();
+  };
+  sticker(40, 40, 150, 70, '#a48bff', '#140d33', 'Elixir', 34, -0.12, 32);
+  sticker(300, 30, 170, 64, '#ff4fa3', '#1b0410', 'MSR ●', 32, 0.08, 30);
+  sticker(60, 190, 230, 64, '#ffc23a', '#2a1a00', 'works on my machine', 14, 0.05, 22);
+  sticker(330, 150, 120, 120, '#2fd8f2', '#04212a', '</>', 60, -0.1, 46);
+  sticker(220, 112, 110, 54, '#a8ea3f', '#152600', 'Vue', 27, 0.14, 26);
+  const t = new CanvasTexture(c);
+  t.colorSpace = SRGBColorSpace;
+  t.anisotropy = 4;
+  return t;
+}
+
+export class BobbleScene {
+  private renderer: WebGLRenderer;
+  private scene = new Scene();
+  private camera = new PerspectiveCamera(30, 1, 0.1, 60);
+  private ramp = toonRamp();
+  private director = new Director();
+  private cb: SceneCallbacks;
+
+  private w = 1;
+  private h = 1;
+  private raf = 0;
+  private running = false;
+  private last = 0;
+  private time = 0;
+  private reduced = false;
+  private drewFirst = false;
+  private prepared = false;
+
+  // Rig
+  private body = new Group();
+  private torso!: Mesh;
+  private head!: Sprite;
+  private headMat!: SpriteMaterial;
+  private armL: Mesh[] = [];
+  private armR: Mesh[] = [];
+  private handL!: Mesh;
+  private handR!: Mesh;
+  private shoulderL = new Vector3(-0.66, 1.62, 0.02);
+  private shoulderR = new Vector3(0.66, 1.62, 0.02);
+  private handTargetL = new Vector3();
+  private handTargetR = new Vector3();
+  private handPosL = new Vector3(-0.3, 0.86, 0.66);
+  private handPosR = new Vector3(0.3, 0.86, 0.66);
+  private restL = new Vector3(-0.3, 0.86, 0.66);
+  private restR = new Vector3(0.3, 0.86, 0.66);
+  private handROverride: Vector3 | null = null;
+  private handLOverride: Vector3 | null = null;
+  private handSpeed = 10;
+
+  // Bobble
+  private bobX = new Spring(0, 60, 6);
+  private bobY = new Spring(0, 80, 7);
+  private bobRot = new Spring(0, 55, 5.5);
+  private bobScale = new Spring(1, 120, 9);
+  private lean = 0;
+  private pointerX = 0;
+  private pointerY = 0;
+  private camX = 0;
+  private camY = 0;
+  private typing = 1;
+  private vibrate = 0;
+  private shake = 0;
+
+  // Props
+  private laptop = new Group();
+  private lid!: Mesh;
+  private mug = new Group();
+  private steam: Sprite[] = [];
+  private cups: Group[] = [];
+  private duck = new Group();
+  private button = new Group();
+  private buttonCap!: Mesh;
+  private rack = new Group();
+  private leds: Mesh[] = [];
+  private extinguisher = new Group();
+  private bug = new Group();
+  private babies: Group[] = [];
+  private fire: Sprite[] = [];
+  private foam: Sprite[] = [];
+  private fireLevel = 0;
+  private foamOn = false;
+
+  // Anchors & picking
+  private fxPos = new Vector3();
+  private fxVisible = false;
+  private raycaster = new Raycaster();
+  private hittables: Array<[Object3D, Hit]> = [];
+  private tmp = new Vector3();
+  private tmp2 = new Vector3();
+  private q = new Quaternion();
+
+  constructor(canvas: HTMLCanvasElement, cb: SceneCallbacks) {
+    this.cb = cb;
+    this.renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
+    this.renderer.outputColorSpace = SRGBColorSpace;
+    this.renderer.setClearColor(0x000000, 0);
+    this.camera.position.set(0, 2.45, 8.4);
+    this.camera.lookAt(LOOK);
+
+    this.buildLights();
+    this.buildSet();
+    this.buildBody();
+    this.buildProps();
+  }
+
+  /* ------------------------------ public ------------------------------ */
+
+  /** Load the face and compile shaders off the main thread before the first frame. */
+  async prepare(faceUrl: string) {
+    const tex = await new TextureLoader().loadAsync(faceUrl);
+    tex.colorSpace = SRGBColorSpace;
+    tex.anisotropy = 4;
+    this.headMat.map = tex;
+    this.headMat.needsUpdate = true;
+    this.headMat.opacity = 1;
+    // Make every prop visible once so all shader variants compile up front.
+    const hidden: Object3D[] = [];
+    this.scene.traverse((o) => {
+      if (!o.visible) {
+        hidden.push(o);
+        o.visible = true;
+      }
+    });
+    await this.renderer.compileAsync(this.scene, this.camera);
+    hidden.forEach((o) => (o.visible = false));
+    this.prepared = true;
+    this.requestFrame();
+  }
+
+  setSize(w: number, h: number, dpr: number) {
+    this.w = w;
+    this.h = h;
+    this.renderer.setPixelRatio(dpr);
+    this.renderer.setSize(w, h, false);
+    this.camera.aspect = w / h;
+    // Keep the whole desk in frame on narrow screens.
+    this.camera.fov = w / h < 0.9 ? 36 : 30;
+    this.camera.updateProjectionMatrix();
+    this.requestFrame();
+  }
+
+  setTheme(light: boolean) {
+    const hemi = this.scene.getObjectByName('hemi') as HemisphereLight;
+    hemi.intensity = light ? 2.1 : 1.6;
+    this.requestFrame();
+  }
+
+  setPointer(x: number, y: number) {
+    this.pointerX = x;
+    this.pointerY = y;
+  }
+
+  setReducedMotion(reduced: boolean) {
+    this.reduced = reduced;
+    if (reduced) {
+      this.stop();
+      this.director.stop();
+      this.requestFrame();
+    }
+  }
+
+  get busy() {
+    return this.director.busy;
+  }
+
+  play(id: GagId) {
+    if (this.reduced) return;
+    const gag = this.makeGag(id);
+    const end = gag.end;
+    gag.end = () => {
+      end();
+      this.cb.onGag(null);
+    };
+    this.director.play(gag);
+    this.cb.onGag(id);
+  }
+
+  /** Pointer in canvas CSS px; returns what's under it. */
+  pick(x: number, y: number): Hit {
+    const ndc = new Vector2((x / this.w) * 2 - 1, -(y / this.h) * 2 + 1);
+    this.raycaster.setFromCamera(ndc, this.camera);
+    const hits = this.raycaster.intersectObjects(
+      this.hittables.filter(([o]) => o.visible).map(([o]) => o),
+      true,
+    );
+    if (!hits.length) return null;
+    let obj: Object3D | null = hits[0].object;
+    while (obj) {
+      const found = this.hittables.find(([o]) => o === obj);
+      if (found) return found[1];
+      obj = obj.parent;
+    }
+    return null;
+  }
+
+  /** Click handling: props start their gag, the head gets booped. */
+  click(x: number, y: number): Hit {
+    const hit = this.pick(x, y);
+    if (!hit) return null;
+    if (hit === 'head' || hit === 'body') this.boop();
+    else if (!this.director.busy) {
+      const map: Partial<Record<Exclude<Hit, null>, GagId>> = { mug: 'coffee', button: 'deploy', duck: 'duck', laptop: 'bug', bug: 'bug' };
+      const gag = map[hit];
+      if (gag) this.play(gag);
+    }
+    return hit;
+  }
+
+  start() {
+    if (this.running || this.reduced) {
+      if (this.reduced) this.requestFrame();
+      return;
+    }
+    this.running = true;
+    this.last = performance.now();
+    const loop = (now: number) => {
+      if (!this.running) return;
+      const dt = Math.min(0.1, (now - this.last) / 1000);
+      this.last = now;
+      this.update(dt);
+      this.render();
+      this.raf = requestAnimationFrame(loop);
+    };
+    this.raf = requestAnimationFrame(loop);
+  }
+
+  stop() {
+    this.running = false;
+    cancelAnimationFrame(this.raf);
+  }
+
+  dispose() {
+    this.stop();
+    this.director.stop();
+    this.scene.traverse((o) => {
+      const m = o as Mesh;
+      m.geometry?.dispose();
+      const mat = m.material as { dispose?: () => void; map?: Texture | null } | undefined;
+      mat?.map?.dispose();
+      mat?.dispose?.();
+    });
+    this.renderer.dispose();
+  }
+
+  /* ------------------------------ build ------------------------------- */
+
+  private toon(color: string, extra: Partial<{ emissive: string; emissiveIntensity: number }> = {}) {
+    return new MeshToonMaterial({ color: new Color(color), gradientMap: this.ramp, ...extra });
+  }
+
+  private buildLights() {
+    const hemi = new HemisphereLight('#c9c4ff', '#1a1640', 1.6);
+    hemi.name = 'hemi';
+    const key = new DirectionalLight('#fff4ea', 2.2);
+    key.position.set(3, 6, 5);
+    const pink = new PointLight('#ff4fa3', 14, 9, 1.6);
+    pink.position.set(-3.4, 3, -1.2);
+    const cyan = new PointLight('#2fd8f2', 12, 9, 1.6);
+    cyan.position.set(3.4, 2.4, -1.4);
+    this.scene.add(hemi, key, pink, cyan);
+  }
+
+  private buildSet() {
+    // Chair back behind the character.
+    const chair = new Mesh(new CapsuleGeometry(0.55, 1.0, 6, 16), this.toon(PALETTE.chair));
+    chair.scale.set(1.15, 1, 0.28);
+    chair.position.set(0, 1.62, -0.66);
+    const headrest = new Mesh(new CapsuleGeometry(0.3, 0.5, 6, 12), this.toon(PALETTE.chair));
+    headrest.rotation.z = Math.PI / 2;
+    headrest.scale.set(1, 1, 0.3);
+    headrest.position.set(0, 2.62, -0.68);
+    this.scene.add(chair, headrest);
+
+    // Desk.
+    const top = new Mesh(new BoxGeometry(3.5, 0.12, 1.75), this.toon(PALETTE.deskTop));
+    top.position.set(0, DESK_Y - 0.06, 0.66);
+    const front = new Mesh(new BoxGeometry(3.5, 0.46, 0.1), this.toon(PALETTE.deskFront));
+    front.position.set(0, DESK_Y - 0.35, 1.5);
+    const edge = new Mesh(new BoxGeometry(3.52, 0.035, 0.035), new MeshBasicMaterial({ color: '#ff4fa3' }));
+    edge.position.set(0, DESK_Y - 0.02, 1.54);
+    const underglow = new Mesh(new BoxGeometry(3.4, 0.02, 0.02), new MeshBasicMaterial({ color: '#2fd8f2' }));
+    underglow.position.set(0, DESK_Y - 0.58, 1.55);
+    const legGeo = new BoxGeometry(0.12, 1.3, 0.12);
+    const legs = [-1.62, 1.62].map((x) => {
+      const leg = new Mesh(legGeo, this.toon(PALETTE.deskFront));
+      leg.position.set(x, DESK_Y - 1.2, 1.38);
+      return leg;
+    });
+    this.scene.add(top, front, edge, underglow, ...legs);
+
+    // Blob shadow under the laptop.
+    const blob = new Mesh(
+      new PlaneGeometry(1.6, 1.0),
+      new MeshBasicMaterial({ map: radialTexture('rgba(0,0,0,0.45)', 'rgba(0,0,0,0)'), transparent: true, depthWrite: false }),
+    );
+    blob.rotation.x = -Math.PI / 2;
+    blob.position.set(0, DESK_Y + 0.002, 0.78);
+    this.scene.add(blob);
+  }
+
+  private buildBody() {
+    const suit = this.toon(PALETTE.suit);
+    // Torso
+    this.torso = new Mesh(new CapsuleGeometry(0.56, 0.55, 8, 20), suit);
+    this.torso.scale.set(1.2, 0.86, 0.74);
+    this.torso.position.set(0, 1.16, 0);
+    this.body.add(this.torso);
+
+    // Shirt V, lapels and tie — tilted to sit on the chest's slope.
+    const chest = new Group();
+    chest.position.set(0, 1.6, 0.37);
+    chest.rotation.x = -0.5;
+    const v = new Shape();
+    v.moveTo(-0.3, 0.22);
+    v.lineTo(0.3, 0.22);
+    v.lineTo(0, -0.4);
+    v.closePath();
+    const shirt = new Mesh(new ShapeGeometry(v), this.toon(PALETTE.shirt));
+    const lapelShape = (dir: number) => {
+      const s = new Shape();
+      s.moveTo(dir * 0.3, 0.22);
+      s.lineTo(dir * 0.5, 0.12);
+      s.lineTo(dir * 0.08, -0.46);
+      s.lineTo(0, -0.4);
+      s.closePath();
+      return s;
+    };
+    // Shirt collar points either side of the neck.
+    const collar = [-1, 1].map((d) => {
+      const s = new Shape();
+      s.moveTo(d * 0.02, 0.24);
+      s.lineTo(d * 0.24, 0.26);
+      s.lineTo(d * 0.1, 0.06);
+      s.closePath();
+      const mesh = new Mesh(new ShapeGeometry(s), this.toon(PALETTE.shirt));
+      mesh.position.z = 0.012;
+      return mesh;
+    });
+    const lapels = [-1, 1].map((d) => new Mesh(new ShapeGeometry(lapelShape(d)), this.toon(PALETTE.lapel)));
+    lapels.forEach((l) => (l.position.z = 0.004));
+    const t = new Shape();
+    t.moveTo(-0.05, 0.16);
+    t.lineTo(0.05, 0.16);
+    t.lineTo(0.07, -0.18);
+    t.lineTo(0, -0.28);
+    t.lineTo(-0.07, -0.18);
+    t.closePath();
+    const tie = new Mesh(new ShapeGeometry(t), this.toon(PALETTE.tie));
+    tie.position.z = 0.008;
+    chest.add(shirt, ...lapels, tie, ...collar);
+    this.body.add(chest);
+
+    // Arms (upper + fore) and hands
+    const armGeo = new CapsuleGeometry(0.12, 1, 4, 10);
+    for (const side of [-1, 1]) {
+      const upper = new Mesh(armGeo, suit);
+      const fore = new Mesh(armGeo, suit);
+      const hand = new Mesh(new SphereGeometry(0.12, 14, 12), this.toon(PALETTE.skin));
+      this.body.add(upper, fore, hand);
+      if (side < 0) {
+        this.armL = [upper, fore];
+        this.handL = hand;
+      } else {
+        this.armR = [upper, fore];
+        this.handR = hand;
+      }
+    }
+
+    // Head: a camera-facing sprite of the real face.
+    this.headMat = new SpriteMaterial({ transparent: true, depthWrite: false, opacity: 0 });
+    this.head = new Sprite(this.headMat);
+    this.head.scale.set(HEAD_W, HEAD_H, 1);
+    this.head.renderOrder = 10;
+    this.body.add(this.head);
+
+    this.scene.add(this.body);
+    this.hittables.push([this.head, 'head'], [this.torso, 'body']);
+  }
+
+  private buildProps() {
+    // Laptop: base, keys and a lid whose back (facing us) wears stickers.
+    const base = new Mesh(new BoxGeometry(1.2, 0.05, 0.72), this.toon(PALETTE.laptop));
+    base.position.set(0, DESK_Y + 0.025, 0.76);
+    const keys = new Mesh(new BoxGeometry(1.02, 0.012, 0.4), this.toon(PALETTE.keys));
+    keys.position.set(0, DESK_Y + 0.055, 0.7);
+    const lidGroup = new Group();
+    lidGroup.position.set(0, DESK_Y + 0.05, 1.11);
+    lidGroup.rotation.x = 0.2;
+    this.lid = new Mesh(new BoxGeometry(1.2, 0.74, 0.04), [
+      this.toon(PALETTE.laptop),
+      this.toon(PALETTE.laptop),
+      this.toon(PALETTE.laptop),
+      this.toon(PALETTE.laptop),
+      new MeshBasicMaterial({ map: lidTexture() }),
+      new MeshBasicMaterial({ color: '#7fdcff' }),
+    ]);
+    this.lid.position.y = 0.37;
+    lidGroup.add(this.lid);
+    this.laptop.add(base, keys, lidGroup);
+    this.scene.add(this.laptop);
+    this.hittables.push([this.laptop, 'laptop']);
+
+    // Mug with steam.
+    const cup = new Mesh(new CylinderGeometry(0.15, 0.13, 0.32, 18), this.toon(PALETTE.mug));
+    cup.position.y = 0.16;
+    const band = new Mesh(new CylinderGeometry(0.152, 0.15, 0.07, 18), this.toon(PALETTE.mugBand));
+    band.position.y = 0.2;
+    const coffee = new Mesh(new CylinderGeometry(0.13, 0.13, 0.01, 18), this.toon(PALETTE.coffee));
+    coffee.position.y = 0.315;
+    const handle = new Mesh(new TorusGeometry(0.075, 0.025, 8, 16), this.toon(PALETTE.mug));
+    handle.position.set(0.16, 0.17, 0);
+    this.mug.add(cup, band, coffee, handle);
+    this.mug.position.set(-1.2, DESK_Y, 0.95);
+    const steamTex = radialTexture('rgba(255,255,255,0.55)', 'rgba(255,255,255,0)');
+    for (let i = 0; i < 4; i++) {
+      const s = new Sprite(new SpriteMaterial({ map: steamTex, transparent: true, depthWrite: false, opacity: 0.5 }));
+      s.scale.setScalar(0.18);
+      this.steam.push(s);
+      this.mug.add(s);
+    }
+    this.scene.add(this.mug);
+    this.hittables.push([this.mug, 'mug']);
+
+    // Coffee stack (coffee gag).
+    for (let i = 0; i < 4; i++) {
+      const c = this.mug.clone();
+      c.children.filter((ch) => ch instanceof Sprite).forEach((ch) => c.remove(ch));
+      c.visible = false;
+      this.cups.push(c);
+      this.scene.add(c);
+    }
+
+    // Rubber duck.
+    const duckMat = this.toon(PALETTE.duck);
+    const dBody = new Mesh(new SphereGeometry(0.2, 18, 14), duckMat);
+    dBody.scale.set(1.15, 0.85, 1);
+    dBody.position.y = 0.16;
+    const dHead = new Mesh(new SphereGeometry(0.13, 16, 12), duckMat);
+    dHead.position.set(0.02, 0.38, 0.06);
+    const beak = new Mesh(new ConeGeometry(0.05, 0.12, 10), this.toon(PALETTE.beak));
+    beak.rotation.x = Math.PI / 2;
+    beak.position.set(0.02, 0.36, 0.2);
+    const eyeMat = new MeshBasicMaterial({ color: '#141022' });
+    const eyes = [-1, 1].map((d) => {
+      const e = new Mesh(new SphereGeometry(0.022, 8, 8), eyeMat);
+      e.position.set(0.02 + d * 0.06, 0.42, 0.17);
+      return e;
+    });
+    this.duck.add(dBody, dHead, beak, ...eyes);
+    this.duck.position.set(-1.0, DESK_Y, 1.2);
+    this.duck.rotation.y = 0.5;
+    this.duck.scale.setScalar(0.001);
+    this.duck.visible = false;
+    this.scene.add(this.duck);
+    this.hittables.push([this.duck, 'duck']);
+
+    // Big red deploy button.
+    const bBase = new Mesh(new CylinderGeometry(0.2, 0.22, 0.08, 20), this.toon(PALETTE.buttonBase));
+    bBase.position.y = 0.04;
+    this.buttonCap = new Mesh(new CylinderGeometry(0.15, 0.15, 0.09, 20), this.toon(PALETTE.button, { emissive: '#ff0030', emissiveIntensity: 0.25 }));
+    this.buttonCap.position.y = 0.12;
+    this.button.add(bBase, this.buttonCap);
+    this.button.position.set(0.95, DESK_Y, 1.0);
+    this.button.scale.setScalar(0.001);
+    this.button.visible = false;
+    this.scene.add(this.button);
+    this.hittables.push([this.button, 'button']);
+
+    // Server rack (Friday deploy) — enters from the right.
+    const rackBody = new Mesh(new BoxGeometry(0.72, 1.35, 0.7), this.toon(PALETTE.rack));
+    rackBody.position.y = 0.675;
+    this.rack.add(rackBody);
+    for (let r = 0; r < 5; r++) {
+      const slot = new Mesh(new BoxGeometry(0.6, 0.17, 0.02), this.toon('#1c1f3a'));
+      slot.position.set(0, 0.22 + r * 0.24, 0.36);
+      const led = new Mesh(new BoxGeometry(0.05, 0.05, 0.02), new MeshBasicMaterial({ color: '#3df2c2' }));
+      led.position.set(0.22, 0.22 + r * 0.24, 0.372);
+      this.leds.push(led);
+      this.rack.add(slot, led);
+    }
+    this.rack.position.set(3.6, DESK_Y - 0.06, 0.1);
+    this.rack.visible = false;
+    this.scene.add(this.rack);
+
+    // Fire and foam particles above the rack.
+    const fireTex = radialTexture('rgba(255,220,120,1)', 'rgba(255,60,0,0)');
+    const foamTex = radialTexture('rgba(255,255,255,0.95)', 'rgba(220,240,255,0)');
+    for (let i = 0; i < 26; i++) {
+      const f = new Sprite(new SpriteMaterial({ map: fireTex, transparent: true, depthWrite: false, blending: AdditiveBlending }));
+      f.visible = false;
+      this.fire.push(f);
+      this.scene.add(f);
+      const o = new Sprite(new SpriteMaterial({ map: foamTex, transparent: true, depthWrite: false }));
+      o.visible = false;
+      this.foam.push(o);
+      this.scene.add(o);
+    }
+
+    // Fire extinguisher.
+    const can = new Mesh(new CylinderGeometry(0.13, 0.13, 0.62, 16), this.toon(PALETTE.extinguisher));
+    can.position.y = 0.31;
+    const top = new Mesh(new CylinderGeometry(0.05, 0.08, 0.1, 10), this.toon('#2b2f52'));
+    top.position.y = 0.66;
+    const hose = new Mesh(new CylinderGeometry(0.025, 0.025, 0.36, 8), this.toon('#1b1d33'));
+    hose.position.set(0.12, 0.66, 0);
+    hose.rotation.z = -1.1;
+    this.extinguisher.add(can, top, hose);
+    this.extinguisher.position.set(1.05, DESK_Y, 1.25);
+    this.extinguisher.scale.setScalar(0.001);
+    this.extinguisher.visible = false;
+    this.scene.add(this.extinguisher);
+
+    // The bug and its offspring.
+    const makeBug = () => {
+      const g = new Group();
+      const shell = new Mesh(new SphereGeometry(0.11, 14, 10), this.toon(PALETTE.bug));
+      shell.scale.set(1, 0.55, 1.3);
+      shell.position.y = 0.06;
+      const head = new Mesh(new SphereGeometry(0.055, 10, 8), this.toon(PALETTE.bugDark));
+      head.position.set(0, 0.06, 0.15);
+      const legMat = this.toon(PALETTE.bugDark);
+      for (let i = 0; i < 6; i++) {
+        const leg = new Mesh(new CylinderGeometry(0.008, 0.008, 0.14, 4), legMat);
+        const side = i < 3 ? -1 : 1;
+        leg.position.set(side * 0.1, 0.04, -0.07 + (i % 3) * 0.07);
+        leg.rotation.z = side * 1.1;
+        leg.name = 'leg';
+        g.add(leg);
+      }
+      g.add(shell, head);
+      g.visible = false;
+      return g;
+    };
+    this.bug = makeBug();
+    this.scene.add(this.bug);
+    this.hittables.push([this.bug, 'bug']);
+    for (let i = 0; i < 3; i++) {
+      const b = makeBug();
+      b.scale.setScalar(0.5);
+      this.babies.push(b);
+      this.scene.add(b);
+    }
+  }
+
+  /* ------------------------------ gags -------------------------------- */
+
+  private say(text: string | null) {
+    this.cb.onBubble('me', text);
+  }
+
+  private fx(text: string | null, at?: Vector3, tone?: 'pink' | 'amber' | 'lime' | 'cyan') {
+    if (at) this.fxPos.copy(at);
+    this.fxVisible = !!text;
+    this.cb.onFx(text, tone);
+  }
+
+  private boop() {
+    this.bobScale.kick(-3.2);
+    this.bobY.kick(-2.2);
+    this.bobRot.kick(rand(-3, 3));
+    if (!this.director.busy) {
+      this.say(BOOPS[Math.floor(Math.random() * BOOPS.length)]);
+      window.clearTimeout(this.boopTimer);
+      this.boopTimer = window.setTimeout(() => {
+        if (!this.director.busy) this.say(null);
+      }, 2200);
+    }
+  }
+  private boopTimer = 0;
+
+  private makeGag(id: GagId): Gag {
+    switch (id) {
+      case 'bug':
+        return this.bugGag();
+      case 'deploy':
+        return this.deployGag();
+      case 'coffee':
+        return this.coffeeGag();
+      case 'duck':
+        return this.duckGag();
+    }
+  }
+
+  private bugGag(): Gag {
+    const start = new Vector3(-2.1, DESK_Y, 1.05);
+    const stop = new Vector3(-0.78, DESK_Y, 0.95);
+    let squashed = false;
+    const dirs = [new Vector3(-1, 0, 0.6), new Vector3(0.2, 0, 1), new Vector3(1, 0, 0.4)];
+    return {
+      id: 'bug',
+      duration: 6.4,
+      cues: [
+        [0, () => {
+          this.bug.visible = true;
+          this.bug.scale.set(1, 1, 1);
+          this.bug.position.copy(start);
+          this.bug.rotation.y = Math.PI / 2;
+        }],
+        [0.9, () => {
+          this.say('…is that a bug?');
+          this.lean = -0.9;
+        }],
+        [2.3, () => {
+          this.typing = 0;
+          this.handSpeed = 9;
+          this.handROverride = new Vector3(-0.55, 2.15, 0.95);
+        }],
+        [2.75, () => {
+          this.handSpeed = 40;
+          this.handROverride = stop.clone().setY(DESK_Y + 0.12);
+        }],
+        [2.86, () => {
+          squashed = true;
+          this.bug.scale.set(1.6, 0.18, 1.5);
+          this.shake = 0.35;
+          this.bobY.kick(-4);
+          this.bobScale.kick(-2.5);
+          this.fx('SPLAT!', stop.clone().setY(DESK_Y + 0.5), 'lime');
+        }],
+        [3.4, () => {
+          this.babies.forEach((b, i) => {
+            b.visible = true;
+            b.position.copy(stop);
+            b.rotation.y = Math.atan2(dirs[i].x, dirs[i].z);
+          });
+          this.fx(null);
+          this.say('1 bug fixed. 3 new bugs.');
+          this.handROverride = null;
+          this.handSpeed = 10;
+        }],
+        [5.6, () => this.say(null)],
+      ],
+      tick: (t, dt) => {
+        if (t < 2.2) {
+          const p = ease(t / 2.2);
+          this.bug.position.lerpVectors(start, stop, p);
+          this.wiggleLegs(this.bug, t);
+        }
+        if (squashed && t > 3.4) {
+          this.babies.forEach((b, i) => {
+            b.position.addScaledVector(dirs[i], dt * 1.4);
+            this.wiggleLegs(b, t * 1.6);
+            if (Math.abs(b.position.x) > 2.3 || b.position.z > 1.55) b.position.y -= dt * 3;
+          });
+        }
+      },
+      end: () => {
+        this.bug.visible = false;
+        this.babies.forEach((b) => (b.visible = false));
+        this.handROverride = null;
+        this.handSpeed = 10;
+        this.typing = 1;
+        this.lean = 0;
+        this.fx(null);
+        this.say(null);
+      },
+    };
+  }
+
+  private deployGag(): Gag {
+    const rackIn = new Vector3(1.5, DESK_Y - 0.06, 0.1);
+    const rackOut = new Vector3(3.6, DESK_Y - 0.06, 0.1);
+    const fireTop = new Vector3(1.4, DESK_Y + 1.4, 0.1);
+    return {
+      id: 'deploy',
+      duration: 8.6,
+      cues: [
+        [0, () => {
+          this.button.visible = true;
+          this.rack.visible = true;
+          this.rack.position.copy(rackOut);
+          this.fx('DEPLOY · FRI 5:59 PM', new Vector3(0.95, DESK_Y + 0.5, 1.0), 'pink');
+        }],
+        [0.9, () => this.say('Small change. Ship it.')],
+        [1.5, () => {
+          this.typing = 0;
+          this.handROverride = new Vector3(0.95, DESK_Y + 0.35, 1.0);
+        }],
+        [1.95, () => {
+          this.handSpeed = 30;
+          this.handROverride = new Vector3(0.95, DESK_Y + 0.18, 1.0);
+          this.buttonCap.position.y = 0.07;
+          this.fx(null);
+        }],
+        [2.25, () => {
+          this.handSpeed = 10;
+          this.handROverride = null;
+          this.buttonCap.position.y = 0.12;
+          this.fireLevel = 1;
+          this.leds.forEach((l) => (l.material as MeshBasicMaterial).color.set('#ff3b5c'));
+          this.vibrate = 1;
+          this.fx('PROD IS ON FIRE', fireTop.clone().add(new Vector3(0, 0.7, 0)), 'amber');
+        }],
+        [3.2, () => this.say('This is fine.')],
+        [4.3, () => {
+          this.extinguisher.visible = true;
+          this.foamOn = true;
+          this.fx(null);
+          this.say('…rolling back.');
+        }],
+        [6.0, () => {
+          this.foamOn = false;
+          this.vibrate = 0;
+          this.leds.forEach((l) => (l.material as MeshBasicMaterial).color.set('#3df2c2'));
+          this.say('Rolled back. Calmly.');
+        }],
+        [7.8, () => this.say(null)],
+      ],
+      tick: (t) => {
+        const enter = ease((t - 1.6) / 0.7);
+        const leave = ease((t - 7.6) / 0.8);
+        this.rack.position.lerpVectors(rackOut, rackIn, enter * (1 - leave));
+        this.button.scale.setScalar(Math.max(0.001, backOut(t / 0.5) * (1 - ease((t - 7.6) / 0.5))));
+        this.extinguisher.scale.setScalar(t > 4.3 ? Math.max(0.001, backOut((t - 4.3) / 0.4) * (1 - ease((t - 7.4) / 0.5))) : 0.001);
+        if (t > 4.3) this.fireLevel = Math.max(0, 1 - (t - 4.6) / 1.4);
+      },
+      end: () => {
+        this.button.visible = false;
+        this.rack.visible = false;
+        this.extinguisher.visible = false;
+        this.fireLevel = 0;
+        this.foamOn = false;
+        this.vibrate = 0;
+        this.typing = 1;
+        this.handROverride = null;
+        this.leds.forEach((l) => (l.material as MeshBasicMaterial).color.set('#3df2c2'));
+        this.fx(null);
+        this.say(null);
+      },
+    };
+  }
+
+  private coffeeGag(): Gag {
+    const lines = ['Coffee #1. Productive.', 'Coffee #2. Very productive.', 'Coffee #3. I can hear the database.', 'COFFEE #4. I REFACTORED EVERYTHING.'];
+    const base = new Vector3(-1.55, DESK_Y, 0.72);
+    const drops = [0.3, 1.3, 2.3, 3.3];
+    return {
+      id: 'coffee',
+      duration: 6.8,
+      cues: [
+        ...drops.map(
+          (at, i) =>
+            [
+              at,
+              () => {
+                const c = this.cups[i];
+                c.visible = true;
+                c.position.set(base.x + (i % 2) * 0.05, DESK_Y + 2.4, base.z);
+                this.typing = 1 + (i + 1) * 0.9;
+                this.vibrate = (i + 1) * 0.28;
+                this.say(lines[i]);
+                this.bobY.kick(1.5 + i);
+              },
+            ] as [number, () => void],
+        ),
+        [5.3, () => this.say(null)],
+      ],
+      tick: (t) => {
+        drops.forEach((at, i) => {
+          const c = this.cups[i];
+          if (!c.visible) return;
+          const p = clamp01((t - at) / 0.45);
+          const floorY = DESK_Y + i * 0.33;
+          c.position.y = floorY + (1 - backOut(p)) * 2.4 * (1 - p) + (p < 1 ? (1 - p) * 0.3 : 0);
+          c.rotation.z = (1 - p) * 0.6;
+          if (t > 5.4) c.scale.setScalar(Math.max(0.001, 1 - ease((t - 5.4) / 0.6)));
+        });
+      },
+      end: () => {
+        this.cups.forEach((c) => {
+          c.visible = false;
+          c.scale.setScalar(1);
+        });
+        this.typing = 1;
+        this.vibrate = 0;
+        this.say(null);
+      },
+    };
+  }
+
+  private duckGag(): Gag {
+    return {
+      id: 'duck',
+      duration: 7.4,
+      cues: [
+        [0, () => {
+          this.duck.visible = true;
+        }],
+        [0.4, () => (this.lean = -0.7)],
+        [0.7, () => {
+          this.typing = 0.3;
+          this.say('So the function takes the ticket, then…');
+        }],
+        [2.5, () => {
+          this.say(null);
+          this.cb.onBubble('duck', 'Quack.');
+        }],
+        [3.6, () => {
+          this.cb.onBubble('duck', null);
+          this.say('…oh. It’s a nil check.');
+          this.bobScale.kick(2.6);
+        }],
+        [5.0, () => {
+          this.say(null);
+          this.cb.onBubble('duck', 'Quack. You’re welcome.');
+        }],
+        [6.6, () => this.cb.onBubble('duck', null)],
+      ],
+      tick: (t) => {
+        const s = backOut(t / 0.55) * (1 - ease((t - 6.8) / 0.5));
+        this.duck.scale.setScalar(Math.max(0.001, s));
+        const quack = (t > 2.5 && t < 3.2) || (t > 5 && t < 5.7);
+        this.duck.rotation.z = quack ? Math.sin(t * 40) * 0.12 : 0;
+      },
+      end: () => {
+        this.duck.visible = false;
+        this.duck.scale.setScalar(0.001);
+        this.typing = 1;
+        this.lean = 0;
+        this.say(null);
+        this.cb.onBubble('duck', null);
+      },
+    };
+  }
+
+  private wiggleLegs(bug: Group, t: number) {
+    let i = 0;
+    bug.children.forEach((c) => {
+      if (c.name === 'leg') {
+        c.rotation.x = Math.sin(t * 28 + i) * 0.5;
+        i += 1.7;
+      }
+    });
+  }
+
+  /* ----------------------------- per frame ---------------------------- */
+
+  private requestFrame() {
+    if (!this.running) {
+      this.update(0);
+      this.render();
+    }
+  }
+
+  private placeLimb(mesh: Mesh, a: Vector3, b: Vector3) {
+    this.tmp.subVectors(b, a);
+    const len = this.tmp.length();
+    mesh.position.addVectors(a, b).multiplyScalar(0.5);
+    this.q.setFromUnitVectors(UP, this.tmp.normalize());
+    mesh.quaternion.copy(this.q);
+    mesh.scale.set(1, Math.max(0.05, len - 0.2), 1);
+  }
+
+  private poseArm(shoulder: Vector3, hand: Vector3, side: number, segs: Mesh[]) {
+    const elbow = this.tmp2.addVectors(shoulder, hand).multiplyScalar(0.5);
+    elbow.x += side * 0.26;
+    elbow.y -= 0.12;
+    elbow.z -= 0.08;
+    const e = elbow.clone();
+    this.placeLimb(segs[0], shoulder, e);
+    this.placeLimb(segs[1], e, hand);
+  }
+
+  private update(dt: number) {
+    this.time += dt;
+    const t = this.time;
+    this.director.update(dt);
+
+    // Typing: hands bounce alternately; speed rises with coffee.
+    const speed = 10 * this.typing;
+    const tl = this.handTargetL.copy(this.handLOverride ?? this.restL);
+    const tr = this.handTargetR.copy(this.handROverride ?? this.restR);
+    if (this.typing > 0 && !this.handLOverride) tl.y += Math.max(0, Math.sin(t * speed)) * 0.07;
+    if (this.typing > 0 && !this.handROverride) tr.y += Math.max(0, Math.sin(t * speed + Math.PI)) * 0.07;
+    const k = 1 - Math.exp(-dt * this.handSpeed);
+    this.handPosL.lerp(tl, dt ? k : 1);
+    this.handPosR.lerp(tr, dt ? k : 1);
+    this.handL.position.copy(this.handPosL);
+    this.handR.position.copy(this.handPosR);
+    this.poseArm(this.shoulderL, this.handPosL, -1, this.armL);
+    this.poseArm(this.shoulderR, this.handPosR, 1, this.armR);
+
+    // Body: breathing, coffee jitter, panic.
+    const jitter = this.vibrate * 0.035;
+    this.body.position.set(Math.sin(t * 61) * jitter, Math.sin(t * 2) * 0.012 + Math.sin(t * 47) * jitter * 0.6, 0);
+    this.body.rotation.y = this.pointerX * 0.08 + this.lean * 0.1;
+
+    // Bobble: lean toward the cursor (or the gag), bob with typing, springs do the rest.
+    this.bobX.target = this.pointerX * 0.1 + this.lean * 0.14;
+    this.bobRot.target = -this.pointerX * 0.12 - this.lean * 0.18;
+    this.bobY.target = this.typing > 0 ? Math.abs(Math.sin(t * speed * 0.5)) * 0.03 * Math.min(2, this.typing) : 0;
+    if (this.vibrate > 0) this.bobRot.kick(Math.sin(t * 50) * this.vibrate * 0.6);
+    for (let left = dt; left > 0; left -= 1 / 60) {
+      const step = Math.min(left, 1 / 60);
+      this.bobX.step(step);
+      this.bobY.step(step);
+      this.bobRot.step(step);
+      this.bobScale.step(step);
+    }
+
+    const sc = this.bobScale.x;
+    this.head.scale.set(HEAD_W * (2 - sc), HEAD_H * sc, 1);
+    this.head.position.set(
+      HEAD_ANCHOR.x + this.bobX.x,
+      HEAD_ANCHOR.y + (HEAD_H * sc) / 2 - 0.16 + this.bobY.x,
+      HEAD_ANCHOR.z + 0.05,
+    );
+    this.headMat.rotation = this.bobRot.x;
+
+    // Steam
+    this.steam.forEach((s, i) => {
+      const p = (t * 0.45 + i / this.steam.length) % 1;
+      s.position.set(Math.sin(p * 6 + i) * 0.05, 0.36 + p * 0.5, 0);
+      (s.material as SpriteMaterial).opacity = Math.sin(p * Math.PI) * 0.4;
+      s.scale.setScalar(0.12 + p * 0.18);
+    });
+
+    // LEDs blink
+    this.leds.forEach((l, i) => (l.visible = Math.sin(t * (this.fireLevel > 0 ? 18 : 3) + i * 1.7) > -0.3));
+
+    // Fire & foam
+    const fireBase = this.rack.position;
+    this.fire.forEach((f, i) => {
+      if (this.fireLevel <= 0) {
+        f.visible = false;
+        return;
+      }
+      f.visible = true;
+      const p = (t * 1.2 + i / this.fire.length) % 1;
+      f.position.set(fireBase.x + Math.sin(i * 12.9) * 0.26 * (1 - p), fireBase.y + 1.38 + p * 1.0, fireBase.z + Math.cos(i * 7.3) * 0.22);
+      f.scale.setScalar((0.55 - p * 0.35) * this.fireLevel);
+      (f.material as SpriteMaterial).opacity = (1 - p) * this.fireLevel;
+    });
+    this.foam.forEach((o, i) => {
+      if (!this.foamOn) {
+        o.visible = false;
+        return;
+      }
+      o.visible = true;
+      const p = (t * 1.6 + i / this.foam.length) % 1;
+      const from = this.tmp.set(1.15, DESK_Y + 0.75, 1.2);
+      const to = this.tmp2.set(fireBase.x + Math.sin(i * 3.1) * 0.25, fireBase.y + 1.5 + Math.cos(i * 5.7) * 0.18, fireBase.z);
+      o.position.lerpVectors(from, to, p);
+      o.position.y += Math.sin(p * Math.PI) * 0.3;
+      o.scale.setScalar(0.12 + p * 0.3);
+      (o.material as SpriteMaterial).opacity = 1 - p * 0.6;
+    });
+
+    // Camera: gentle parallax and impact shake.
+    this.camX += (this.pointerX * 0.9 - this.camX) * (dt ? 1 - Math.exp(-dt * 3) : 1);
+    this.camY += (-this.pointerY * 0.35 - this.camY) * (dt ? 1 - Math.exp(-dt * 3) : 1);
+    this.shake = Math.max(0, this.shake - dt);
+    const sh = this.shake * 0.25;
+    this.camera.position.set(this.camX + rand(-sh, sh), 2.45 + this.camY + rand(-sh, sh), 8.4);
+    this.camera.lookAt(LOOK);
+
+    this.emitAnchors();
+  }
+
+  private project(v: Vector3, visible: boolean): Anchor {
+    this.tmp.copy(v).project(this.camera);
+    return { x: (this.tmp.x * 0.5 + 0.5) * this.w, y: (-this.tmp.y * 0.5 + 0.5) * this.h, visible };
+  }
+
+  private emitAnchors() {
+    const me = this.tmp2.copy(this.head.position).add(new Vector3(HEAD_W * 0.32, HEAD_H * 0.42, 0));
+    const meA = this.project(me, true);
+    const duckA = this.project(this.duck.position.clone().add(new Vector3(0, 0.7, 0)), this.duck.visible);
+    const fxA = this.project(this.fxPos, this.fxVisible);
+    this.cb.onAnchors(meA, duckA, fxA);
+  }
+
+  private render() {
+    if (!this.prepared) return;
+    this.renderer.render(this.scene, this.camera);
+    if (!this.drewFirst && this.headMat.map) {
+      this.drewFirst = true;
+      this.cb.onFirstFrame();
+    }
+  }
+}

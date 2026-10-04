@@ -1,5 +1,5 @@
 import { m } from 'framer-motion';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { useReducedMotion } from '../../hooks/useMediaQuery';
 import { EASE_OUT_EXPO } from '../../lib/motion';
 
@@ -52,12 +52,20 @@ export function RevealGroup({ children, className, step = 0.08, delay = 0, as = 
   );
 }
 
-export function RevealItem({ children, className, as = 'div' }: { children: ReactNode; className?: string; as?: 'div' | 'li' }) {
+interface ItemProps {
+  children: ReactNode;
+  className?: string;
+  style?: CSSProperties;
+  as?: 'div' | 'li';
+}
+
+export function RevealItem({ children, className, style, as = 'div' }: ItemProps) {
   const reduced = useReducedMotion();
   const Comp = as === 'li' ? m.li : m.div;
   return (
     <Comp
       className={className}
+      style={style}
       variants={{
         hidden: { opacity: 0, y: reduced ? 0 : 24 },
         visible: { opacity: 1, y: 0, transition: { duration: reduced ? 0.3 : 0.85, ease: EASE_OUT_EXPO } },

@@ -1,12 +1,23 @@
 import { channels, profile } from '../../../content/profile';
 import { useLocalTime } from '../../../hooks/useLocalTime';
+import type { Tone } from '../../../content/types';
+import { toneStyle } from '../../../lib/tones';
 import { copyText } from '../../../lib/utils';
 import { useUI } from '../../../providers/UIProvider';
 import { Icon, type IconName } from '../../primitives/Icon';
 import { Magnetic } from '../../primitives/Magnetic';
 import { Reveal, RevealGroup, RevealItem } from '../../primitives/Reveal';
 import { SectionHeader } from '../../primitives/SectionHeader';
+import { ToneSection } from '../../primitives/ToneSection';
 import { ContactForm } from './ContactForm';
+
+const channelTone: Record<string, Tone> = {
+  linkedin: 'interface',
+  github: 'systems',
+  whatsapp: 'signal',
+  phone: 'data',
+  instagram: 'human',
+};
 
 const channelIcon: Record<string, IconName> = {
   linkedin: 'linkedin',
@@ -26,11 +37,18 @@ export function Contact() {
   };
 
   return (
-    <section id="contact" aria-labelledby="contact-title" className="section-pad relative isolate overflow-hidden border-t border-line">
+    <ToneSection id="contact" aria-labelledby="contact-title" className="section-pad overflow-hidden border-t border-line" ambient={false}>
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -z-10"
-        style={{ background: 'radial-gradient(50% 45% at 85% 90%, var(--glow-accent), transparent 70%)', opacity: 0.6 }}
+        style={{
+          background: [
+            'radial-gradient(45% 40% at 88% 92%, color-mix(in oklab, var(--systems) var(--tone-glow-strength), transparent), transparent 70%)',
+            'radial-gradient(40% 40% at 60% 100%, color-mix(in oklab, var(--human) var(--tone-glow-strength), transparent), transparent 70%)',
+            'radial-gradient(35% 35% at 4% 8%, color-mix(in oklab, var(--interface) calc(var(--tone-glow-strength) * 0.8), transparent), transparent 70%)',
+          ].join(','),
+          opacity: 0.75,
+        }}
       />
       <div className="shell">
         <SectionHeader index="06" label="Contact" id="contact-title" title={'Have a system that needs\nto *keep running?*'} />
@@ -68,14 +86,14 @@ export function Contact() {
 
             <RevealGroup as="ul" className="mt-12 border-t border-line" step={0.05}>
               {channels.map((c) => (
-                <RevealItem as="li" key={c.id} className="border-b border-line">
+                <RevealItem as="li" key={c.id} className="border-b border-line" style={toneStyle(channelTone[c.id])}>
                   <a
                     href={c.href}
                     {...(c.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                     className="group flex items-center justify-between gap-4 py-4"
                   >
                     <span className="flex items-center gap-4">
-                      <span className="grid size-10 place-items-center rounded-full border border-line text-muted transition-colors duration-300 group-hover:border-accent group-hover:text-accent">
+                      <span className="grid size-10 place-items-center rounded-full border border-line text-muted transition-colors duration-300 group-hover:border-tone group-hover:text-tone">
                         <Icon name={channelIcon[c.id]} size={17} />
                       </span>
                       <span>
@@ -108,6 +126,6 @@ export function Contact() {
           </Reveal>
         </div>
       </div>
-    </section>
+    </ToneSection>
   );
 }

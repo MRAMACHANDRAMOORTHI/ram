@@ -6,9 +6,11 @@ import { useFocusTrap } from '../../../hooks/useFocusTrap';
 import { useReducedMotion } from '../../../hooks/useMediaQuery';
 import { EASE_IN_OUT_QUART, EASE_OUT_EXPO } from '../../../lib/motion';
 import { lockScroll, unlockScroll } from '../../../lib/scroll';
-import { keepHyphens } from '../../../lib/utils';
+import { toneStyle } from '../../../lib/tones';
+import { cn, keepHyphens } from '../../../lib/utils';
 import { useUI } from '../../../providers/UIProvider';
 import { Icon } from '../../primitives/Icon';
+import { ProjectVisual } from '../../visuals/ProjectVisual';
 import { ArchitectureDiagram } from './ArchitectureDiagram';
 import { Lightbox } from './Lightbox';
 import { ProjectLinks } from './ProjectLinks';
@@ -97,7 +99,7 @@ function CaseStudy({ project, origin, onClose, onSwitch }: CaseStudyProps) {
           <ol className="mt-4">
             {project.contribution.map((c, i) => (
               <li key={c} className="grid grid-cols-[2.5rem_1fr] border-b border-line py-4 text-lead">
-                <span className="text-meta pt-1.5 text-accent">0{i + 1}</span>
+                <span className="text-meta pt-1.5 text-tone">0{i + 1}</span>
                 {c}
               </li>
             ))}
@@ -130,7 +132,7 @@ function CaseStudy({ project, origin, onClose, onSwitch }: CaseStudyProps) {
         <div className="flex flex-col gap-6 sm:flex-row sm:items-end sm:gap-12">
           {metric && (
             <p className="shrink-0">
-              <span className="block text-[clamp(4rem,2.5rem+6vw,7.5rem)] leading-[0.85] font-medium tracking-[-0.05em] text-accent">
+              <span className="block text-[clamp(4rem,2.5rem+6vw,7.5rem)] leading-[0.85] font-medium tracking-[-0.05em] text-tone">
                 {metric}
               </span>
               <span className="text-meta mt-3 block text-faint">{label}</span>
@@ -142,7 +144,7 @@ function CaseStudy({ project, origin, onClose, onSwitch }: CaseStudyProps) {
     });
   }
 
-  blocks.push({
+  if (project.gallery.length) blocks.push({
     label: 'Screens',
     content: (
       <ul className="grid gap-4 sm:grid-cols-2">
@@ -179,6 +181,7 @@ function CaseStudy({ project, origin, onClose, onSwitch }: CaseStudyProps) {
       role="dialog"
       aria-modal="true"
       aria-labelledby="case-title"
+      style={toneStyle(project.tone)}
       className="fixed inset-0 z-[70] bg-bg"
       initial={reduced ? { opacity: 0 } : { clipPath: from }}
       animate={reduced ? { opacity: 1 } : { clipPath: 'inset(0px 0px 0px 0px round 0px)' }}
@@ -210,7 +213,7 @@ function CaseStudy({ project, origin, onClose, onSwitch }: CaseStudyProps) {
               </span>
             </button>
           </div>
-          <m.span aria-hidden="true" className="absolute inset-x-0 -bottom-px h-px origin-left bg-accent" style={{ scaleX: scrollYProgress }} />
+          <m.span aria-hidden="true" className="absolute inset-x-0 -bottom-px h-px origin-left bg-tone" style={{ scaleX: scrollYProgress }} />
         </div>
 
         <m.article
@@ -220,9 +223,11 @@ function CaseStudy({ project, origin, onClose, onSwitch }: CaseStudyProps) {
           transition={{ duration: 0.9, ease: EASE_OUT_EXPO, delay: origin && !reduced ? 0.4 : 0.1 }}
           className="shell pb-[calc(var(--dock-space)+6rem)]"
         >
-          <header className="pt-14 lg:pt-24">
+          <header className="relative pt-14 lg:pt-24">
+            <div aria-hidden="true" className="tone-ambient pointer-events-none absolute -inset-x-[var(--gutter)] -top-16 -z-10 h-[36rem]" />
             <p className="text-meta text-faint">
-              <span className="text-accent">{project.category}</span> · {project.year}
+              <span className="text-tone">{project.category}</span> · {project.year}
+              {project.status && <span className="text-tone"> · {project.status}</span>}
             </p>
             <h1 id="case-title" ref={titleRef} tabIndex={-1} className="text-display mt-6 max-w-[16ch] text-balance outline-none">
               {keepHyphens(project.title)}
@@ -246,17 +251,27 @@ function CaseStudy({ project, origin, onClose, onSwitch }: CaseStudyProps) {
             </div>
           </header>
 
-          <figure className="mt-14 overflow-hidden rounded-3xl border border-line bg-surface shadow-lg lg:mt-20">
-            <img
-              src={project.cover.src}
-              srcSet={project.cover.srcSet}
-              sizes="(min-width: 1360px) 1300px, 100vw"
-              width={project.cover.width}
-              height={project.cover.height}
-              alt={project.cover.alt}
-              decoding="async"
-              className="max-h-[78vh] w-full object-cover object-top"
-            />
+          <figure className="mt-14 lg:mt-20">
+            <div
+              className={cn(
+                'overflow-hidden rounded-3xl border border-line bg-surface shadow-lg',
+                project.cover ? 'max-h-[78vh]' : 'aspect-[16/10]',
+              )}
+            >
+              <ProjectVisual
+                project={project}
+                eager
+                alt={project.cover?.alt}
+                sizes="(min-width: 1360px) 1300px, 100vw"
+                className={project.cover ? 'max-h-[78vh] w-full' : undefined}
+              />
+            </div>
+            {!project.cover && (
+              <figcaption className="text-label mt-3 text-faint">
+                Illustration rebuilt from the project’s own documentation — the product is private, so this is not a
+                screenshot.
+              </figcaption>
+            )}
           </figure>
 
           <div className="mt-24 space-y-24 lg:mt-32 lg:space-y-32">
@@ -264,7 +279,7 @@ function CaseStudy({ project, origin, onClose, onSwitch }: CaseStudyProps) {
               <section key={b.label} aria-labelledby={`case-${i}`} className="grid gap-6 lg:grid-cols-12 lg:gap-10">
                 <h2 id={`case-${i}`} className="text-meta text-faint lg:col-span-3">
                   <span className="lg:sticky lg:top-24">
-                    <span className="text-accent">{String(i + 1).padStart(2, '0')}</span> {b.label}
+                    <span className="text-tone">{String(i + 1).padStart(2, '0')}</span> {b.label}
                   </span>
                 </h2>
                 <div className="min-w-0 lg:col-span-9">{b.content}</div>
@@ -278,12 +293,13 @@ function CaseStudy({ project, origin, onClose, onSwitch }: CaseStudyProps) {
               type="button"
               onClick={() => onSwitch(next.slug)}
               data-cursor="Next"
+              style={toneStyle(next.tone)}
               className="group mt-6 flex w-full items-center justify-between gap-6 text-left"
             >
               <span className="text-title transition-transform duration-700 ease-out-expo group-hover:translate-x-3">
                 {keepHyphens(next.title)}
               </span>
-              <span className="grid size-14 shrink-0 place-items-center rounded-full border border-line-strong transition-colors duration-500 group-hover:border-accent group-hover:bg-accent group-hover:text-accent-ink">
+              <span className="grid size-14 shrink-0 place-items-center rounded-full border border-line-strong transition-colors duration-500 group-hover:border-tone group-hover:bg-tone group-hover:text-bg">
                 <Icon name="arrow-right" />
               </span>
             </button>

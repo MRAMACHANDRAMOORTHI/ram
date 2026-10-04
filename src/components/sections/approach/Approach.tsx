@@ -2,10 +2,12 @@ import { lazy, Suspense, useEffect, type PointerEvent } from 'react';
 import { concerns, type Concern } from '../../../content/approach';
 import { contextLabels } from '../../../content/stack';
 import { scrollToSection } from '../../../lib/scroll';
+import { toneStyle } from '../../../lib/tones';
 import { useUI } from '../../../providers/UIProvider';
 import { Icon } from '../../primitives/Icon';
 import { Reveal, RevealGroup, RevealItem } from '../../primitives/Reveal';
 import { SectionHeader } from '../../primitives/SectionHeader';
+import { ToneSection } from '../../primitives/ToneSection';
 import { loadSimulator } from './loadSimulator';
 
 const LifecycleSimulator = lazy(loadSimulator);
@@ -18,7 +20,7 @@ export function Approach() {
   }, []);
 
   return (
-    <section id="approach" aria-labelledby="approach-title" className="section-pad relative border-t border-line">
+    <ToneSection id="approach" aria-labelledby="approach-title" className="section-pad border-t border-line">
       <div className="shell">
         <SectionHeader
           index="04"
@@ -60,7 +62,7 @@ export function Approach() {
           ))}
         </RevealGroup>
       </div>
-    </section>
+    </ToneSection>
   );
 }
 
@@ -77,10 +79,18 @@ function ConcernCard({ concern, index }: { concern: Concern; index: number }) {
   return (
     <article
       onPointerMove={onMove}
-      className="spotlight flex h-full min-h-[17rem] flex-col overflow-hidden rounded-2xl border border-line bg-bg-raised p-6 transition-colors duration-500 hover:border-line-strong"
+      style={toneStyle(concern.tone)}
+      className="spotlight group/card relative flex h-full min-h-[17rem] flex-col overflow-hidden rounded-2xl border border-line bg-bg-raised p-6 transition-colors duration-500 hover:border-tone/40"
     >
+      <span
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-tone to-transparent opacity-50 transition-opacity duration-500 group-hover/card:opacity-100"
+      />
       <div className="text-meta flex items-center justify-between text-faint">
-        <span className="text-accent">{concern.label}</span>
+        <span className="inline-flex items-center gap-2 text-tone">
+          <span aria-hidden="true" className="size-1.5 rounded-full bg-tone" />
+          {concern.label}
+        </span>
         <span>{String(index + 1).padStart(2, '0')}</span>
       </div>
       <h4 className="text-subheading mt-10 text-balance">{concern.title}</h4>

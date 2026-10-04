@@ -17,10 +17,10 @@ export function SectionHeader({ index, label, title, intro, id }: SectionHeaderP
     <header className="grid items-end gap-8 lg:grid-cols-12 lg:gap-12">
       <div className="lg:col-span-8">
         <div className="text-meta flex items-center gap-3 text-faint">
-          <span className="text-accent">{index}</span>
+          <span className="text-tone">{index}</span>
           <m.span
             aria-hidden="true"
-            className="h-px w-14 origin-left bg-line-strong"
+            className="h-px w-14 origin-left bg-gradient-to-r from-tone to-line-strong"
             initial={{ scaleX: 0 }}
             whileInView={{ scaleX: 1 }}
             viewport={{ once: true }}
@@ -28,7 +28,7 @@ export function SectionHeader({ index, label, title, intro, id }: SectionHeaderP
           />
           <span>{label}</span>
         </div>
-        <SplitReveal as="h2" id={id} text={title} className="text-title mt-6 text-balance outline-none" />
+        <SplitReveal as="h2" id={id} text={title} className="text-title mt-6 text-balance outline-none [&_.serif-em]:text-tone" />
       </div>
       {intro && (
         <Reveal className="text-lead text-muted lg:col-span-4 lg:pb-2" delay={0.15}>

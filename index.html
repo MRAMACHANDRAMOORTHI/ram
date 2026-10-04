@@ -9,8 +9,8 @@
       content="Software engineer building fault-tolerant backends in Elixir & Phoenix and real-time interfaces in Vue and React. Currently architecting the Helpdesk platform for the Sastra Online Learning Platform at Ardhika Software Technologies."
     />
     <meta name="author" content="Ramachandramoorthi M" />
-    <meta name="theme-color" content="#0b0b0c" media="(prefers-color-scheme: dark)" />
-    <meta name="theme-color" content="#f3f0ea" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#080a1c" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#fff8f0" media="(prefers-color-scheme: light)" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content="Ramachandramoorthi M — Software Engineer" />
     <meta
@@ -42,29 +42,29 @@
     </script>
 
     <style>
-      html { background: #0b0b0c; color: #edebe6; }
-      html[data-theme='light'] { background: #f3f0ea; color: #17150f; }
+      html { background: #080a1c; color: #f3f2ff; }
+      html[data-theme='light'] { background: #fff8f0; color: #1a1433; }
       #boot {
         position: fixed; inset: 0; z-index: 200; display: grid; place-items: center;
-        background: #0b0b0c; color: #edebe6;
+        background: #080a1c; color: #f3f2ff;
         font: 500 12px/1.6 ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
         letter-spacing: 0.04em;
         clip-path: inset(0 0 0 0);
         transition: clip-path 0.9s cubic-bezier(0.76, 0, 0.24, 1);
       }
-      html[data-theme='light'] #boot { background: #f3f0ea; color: #17150f; }
+      html[data-theme='light'] #boot { background: #fff8f0; color: #1a1433; }
       #boot.is-leaving { clip-path: inset(0 0 100% 0); }
       #boot .boot-inner { width: min(280px, 80vw); }
       #boot .boot-mark { display: flex; align-items: center; gap: 8px; font-size: 13px; letter-spacing: 0.24em; margin-bottom: 20px; }
-      #boot .boot-mark i { width: 7px; height: 7px; border-radius: 50%; background: #ff6b35; animation: boot-pulse 1s ease-in-out infinite alternate; }
-      html[data-theme='light'] #boot .boot-mark i { background: #c2410c; }
+      #boot .boot-mark i { width: 7px; height: 7px; border-radius: 50%; background: #ff4fa3; animation: boot-pulse 1s ease-in-out infinite alternate; }
+      html[data-theme='light'] #boot .boot-mark i { background: #cc1f68; }
       #boot ol { list-style: none; margin: 0 0 18px; padding: 0; opacity: 0.55; }
       #boot li::before { content: '[  ] '; white-space: pre; }
       #boot li.is-done { opacity: 1; }
-      #boot li.is-done::before { content: '[ok] '; color: #73e2c0; }
-      html[data-theme='light'] #boot li.is-done::before { color: #0f7b62; }
+      #boot li.is-done::before { content: '[ok] '; color: #3df2c2; }
+      html[data-theme='light'] #boot li.is-done::before { color: #0b7a5a; }
       #boot .boot-bar { height: 1px; background: currentColor; opacity: 0.15; position: relative; }
-      #boot .boot-bar b { position: absolute; inset: 0; background: #ff6b35; transform-origin: left; transform: scaleX(var(--p, 0.08)); transition: transform 0.4s ease; }
+      #boot .boot-bar b { position: absolute; inset: 0; background: #ff4fa3; transform-origin: left; transform: scaleX(var(--p, 0.08)); transition: transform 0.4s ease; }
       html[data-boot='fast'] #boot ol, html[data-boot='fast'] #boot .boot-bar { display: none; }
       @keyframes boot-pulse { from { opacity: 0.35; } to { opacity: 1; } }
       @media (prefers-reduced-motion: reduce) {
@@ -100,9 +100,9 @@
       <div class="boot-inner">
         <div class="boot-mark">MSR <i></i></div>
         <ol>
-          <li data-step="app">supervisor started</li>
-          <li data-step="fonts">typefaces loaded</li>
-          <li data-step="scene">scene ready</li>
+          <li data-step="app">coffee brewed</li>
+          <li data-step="fonts">fonts ironed</li>
+          <li data-step="scene">head inflated</li>
         </ol>
         <div class="boot-bar"><b></b></div>
       </div>

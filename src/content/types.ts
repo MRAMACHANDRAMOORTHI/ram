@@ -1,5 +1,15 @@
+/**
+ * Domain tones (see styles/index.css). Visual identity only — never carries facts.
+ * systems = backend · interface = frontend · data · automation = jobs & workflows
+ * · signal = responses & healthy state · human = people, profile, career.
+ */
+export type Tone = 'systems' | 'interface' | 'data' | 'automation' | 'signal' | 'human';
+
 /** Where a skill or decision was exercised. Keys map to roles and projects. */
-export type ContextId = 'helpdesk' | 'cict' | 'retech' | 'healthchain' | 'scholorsphere';
+export type ContextId = 'helpdesk' | 'lms' | 'aims' | 'cict' | 'retech' | 'healthchain' | 'scholorsphere';
+
+/** Projects without public screenshots are shown with an illustration rebuilt from their documentation. */
+export type VisualId = 'lms' | 'aims';
 
 export interface Shot {
   src: string;
@@ -24,6 +34,7 @@ export interface ArchitectureNode {
 
 export interface ArchitectureLayer {
   label: string;
+  tone: Tone;
   nodes: ArchitectureNode[];
 }
 
@@ -35,6 +46,7 @@ export interface ArchitectureSpec {
 
 export interface Project {
   slug: ContextId;
+  tone: Tone;
   title: string;
   tagline: string;
   year: string;
@@ -44,7 +56,9 @@ export interface Project {
   status?: string;
   stack: string[];
   links: ProjectLink[];
-  cover: Shot;
+  /** A real screenshot, or — when none can be shown — an illustration (`visual`). */
+  cover?: Shot;
+  visual?: VisualId;
   gallery: Shot[];
   problem: string;
   solution: string;
@@ -64,6 +78,7 @@ export interface Impact {
 
 export interface Role {
   id: ContextId;
+  tone: Tone;
   company: string;
   companyShort: string;
   url?: string;
@@ -77,7 +92,7 @@ export interface Role {
   highlights: string[];
   impact?: Impact[];
   stack: string[];
-  project?: ContextId;
+  projects?: ContextId[];
 }
 
 export interface Education {

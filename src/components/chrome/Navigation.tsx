@@ -1,9 +1,10 @@
 import { m, useMotionValueEvent, useScroll } from 'framer-motion';
 import { useCallback, useLayoutEffect, useRef, useState, type MouseEvent } from 'react';
 import { profile } from '../../content/profile';
-import { sectionIds, sections } from '../../content/navigation';
+import { sectionIds, sections, sectionTone } from '../../content/navigation';
 import { useActiveSection } from '../../hooks/useActiveSection';
 import { scrollToSection } from '../../lib/scroll';
+import { toneStyle, toneText } from '../../lib/tones';
 import { cn, isMac } from '../../lib/utils';
 import { useUI } from '../../providers/UIProvider';
 import { Button } from '../primitives/Button';
@@ -73,6 +74,7 @@ function DesktopNav({ active, scrolled, progress }: { active: string | null; scr
         <Logo />
         <nav
           aria-label="Sections"
+          style={toneStyle(active ? sectionTone(active) : 'systems')}
           className={cn(
             'relative rounded-full border p-1 transition-[background-color,border-color,box-shadow] duration-500',
             scrolled ? 'glass shadow-md' : 'border-transparent',
@@ -81,7 +83,7 @@ function DesktopNav({ active, scrolled, progress }: { active: string | null; scr
           <ul ref={listRef} className="relative flex items-center">
             <span
               aria-hidden="true"
-              className="absolute inset-y-0 left-0 rounded-full bg-ink/7 transition-[transform,width,opacity] duration-500 ease-out-expo"
+              className="absolute inset-y-0 left-0 rounded-full bg-[color-mix(in_oklab,var(--tone)_16%,transparent)] shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--tone)_28%,transparent)] transition-[transform,width,opacity,background-color] duration-500 ease-out-expo"
               style={{
                 transform: `translateX(${indicator?.x ?? 0}px)`,
                 width: indicator?.w ?? 0,
@@ -104,7 +106,7 @@ function DesktopNav({ active, scrolled, progress }: { active: string | null; scr
           </ul>
           <m.span
             aria-hidden="true"
-            className="absolute inset-x-5 -bottom-px h-px origin-left bg-accent"
+            className="absolute inset-x-5 -bottom-px h-px origin-left bg-gradient-to-r from-systems via-automation to-human"
             style={{ scaleX: progress, opacity: scrolled ? 1 : 0 }}
           />
         </nav>
@@ -154,7 +156,11 @@ function MobileBar({ scrolled, progress }: { scrolled: boolean; progress: Progre
           <ThemeToggle className="size-11" />
         </div>
       </div>
-      <m.span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-px origin-left bg-accent" style={{ scaleX: progress }} />
+      <m.span
+        aria-hidden="true"
+        className="absolute inset-x-0 bottom-0 h-px origin-left bg-gradient-to-r from-systems via-automation to-human"
+        style={{ scaleX: progress }}
+      />
     </header>
   );
 }
@@ -179,7 +185,7 @@ function Dock({ active }: { active: string | null }) {
                   current ? 'bg-ink/8 text-ink' : 'text-faint',
                 )}
               >
-                <Icon name={dockIcons[s.id]} size={19} className={cn('transition-colors', current && 'text-accent')} />
+                <Icon name={dockIcons[s.id]} size={19} className={cn('transition-colors', current && toneText[s.tone])} />
                 {s.label}
               </a>
             </li>

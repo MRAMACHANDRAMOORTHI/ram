@@ -1,17 +1,19 @@
 import { m } from 'framer-motion';
 import { useMemo, useRef, useState } from 'react';
 import { projectBySlug } from '../../../content/projects';
-import { connectedTech, contextLabels, stack, stackGroups, techById, toolkit } from '../../../content/stack';
+import { connectedTech, contextLabels, groupTone, stack, stackGroups, techById, toolkit } from '../../../content/stack';
 import type { ContextId } from '../../../content/types';
 import { useConnectors } from '../../../hooks/useConnectors';
 import { useReducedMotion } from '../../../hooks/useMediaQuery';
 import { EASE_OUT_EXPO } from '../../../lib/motion';
 import { scrollToSection } from '../../../lib/scroll';
+import { toneStyle } from '../../../lib/tones';
 import { cn } from '../../../lib/utils';
 import { useUI } from '../../../providers/UIProvider';
 import { Icon } from '../../primitives/Icon';
 import { Reveal } from '../../primitives/Reveal';
 import { SectionHeader } from '../../primitives/SectionHeader';
+import { ToneSection } from '../../primitives/ToneSection';
 
 export function Stack() {
   const [active, setActive] = useState('elixir');
@@ -23,7 +25,7 @@ export function Stack() {
   const tech = techById(active)!;
 
   return (
-    <section id="stack" aria-labelledby="stack-title" className="section-pad relative border-t border-line">
+    <ToneSection id="stack" aria-labelledby="stack-title" className="section-pad border-t border-line">
       <div className="shell">
         <SectionHeader
           index="05"
@@ -42,7 +44,7 @@ export function Stack() {
                     key={p.key}
                     d={p.d}
                     fill="none"
-                    className="stroke-accent"
+                    stroke={`var(--${groupTone[tech.group]})`}
                     strokeWidth={1}
                     initial={{ pathLength: reduced ? 1 : 0, opacity: 0 }}
                     animate={{ pathLength: 1, opacity: 0.4 }}
@@ -52,8 +54,9 @@ export function Stack() {
               </svg>
               <div className="relative grid gap-x-8 gap-y-12 sm:grid-cols-2 xl:grid-cols-3">
                 {stackGroups.map((group) => (
-                  <div key={group}>
+                  <div key={group} style={toneStyle(groupTone[group])}>
                     <h3 className="text-meta flex items-center gap-3 text-faint">
+                      <span aria-hidden="true" className="size-1.5 rounded-full bg-tone" />
                       {group}
                       <span className="h-px flex-1 bg-line" aria-hidden="true" />
                     </h3>
@@ -74,8 +77,8 @@ export function Stack() {
                                 aria-pressed={isActive}
                                 className={cn(
                                   'relative z-10 inline-flex h-10 items-center gap-2 rounded-full border px-4 text-[0.9375rem] transition-[background-color,border-color,color] duration-300',
-                                  isActive && 'border-accent bg-accent text-accent-ink',
-                                  !isActive && isLinked && 'border-accent/50 bg-bg text-ink',
+                                  isActive && 'border-tone bg-tone text-bg',
+                                  !isActive && isLinked && 'border-tone/55 bg-bg text-ink shadow-[0_0_18px_-6px_var(--tone)]',
                                   !isActive && !isLinked && 'border-line bg-bg text-muted hover:border-line-strong hover:text-ink',
                                 )}
                               >
@@ -84,7 +87,7 @@ export function Stack() {
                                   <>
                                     <span
                                       aria-hidden="true"
-                                      className={cn('size-1.5 rounded-full', isActive ? 'bg-accent-ink' : 'bg-accent')}
+                                      className={cn('size-1.5 rounded-full', isActive ? 'bg-bg' : 'bg-tone')}
                                     />
                                     <span className="sr-only">(core)</span>
                                   </>
@@ -101,39 +104,40 @@ export function Stack() {
 
             <p className="text-label mt-12 flex flex-wrap items-center gap-x-3 gap-y-2 text-faint">
               <span className="inline-flex items-center gap-1.5">
-                <span className="size-1.5 rounded-full bg-accent" /> core stack
+                <span className="size-1.5 rounded-full bg-ink" /> core stack
               </span>
               <span aria-hidden="true">·</span>
               <span>Also in the toolkit: {toolkit.join(', ')}</span>
             </p>
           </Reveal>
 
-          <aside className="order-1 lg:order-2 lg:col-span-4">
-            <div className="rounded-3xl border border-line bg-bg-raised p-6 sm:p-8 lg:sticky lg:top-[calc(var(--nav-h)+2rem)]">
-              <div aria-live="polite">
+          <aside className="order-1 lg:order-2 lg:col-span-4" style={toneStyle(groupTone[tech.group])}>
+            <div className="relative overflow-hidden rounded-3xl border border-tone/30 bg-bg-raised p-6 transition-colors duration-500 sm:p-8 lg:sticky lg:top-[calc(var(--nav-h)+2rem)]">
+              <div aria-hidden="true" className="tone-ambient pointer-events-none absolute inset-0 -z-0 transition-opacity duration-500" />
+              <div aria-live="polite" className="relative">
                 <p className="text-meta text-faint">
                   {tech.group}
-                  {tech.core && <span className="text-accent"> · core</span>}
+                  {tech.core && <span className="text-tone"> · core</span>}
                 </p>
                 <h3 className="text-heading mt-3">{tech.name}</h3>
                 <p className="mt-4 text-[0.9375rem] leading-relaxed text-muted">{tech.note}</p>
               </div>
 
-              <h4 className="text-meta mt-8 text-faint">Where</h4>
+              <h4 className="text-meta relative mt-8 text-faint">Where</h4>
               {tech.usedIn.length ? (
-                <ul className="mt-3 border-t border-line">
+                <ul className="relative mt-3 border-t border-line">
                   {tech.usedIn.map((c) => (
                     <ContextLink key={c} context={c} />
                   ))}
                 </ul>
               ) : (
-                <p className="mt-3 text-sm text-ink">Every project on this page.</p>
+                <p className="relative mt-3 text-sm text-ink">Every project on this page.</p>
               )}
 
               {connected.size > 0 && (
                 <>
-                  <h4 className="text-meta mt-8 text-faint">Ran alongside</h4>
-                  <p className="mt-3 text-sm leading-relaxed text-ink">
+                  <h4 className="text-meta relative mt-8 text-faint">Ran alongside</h4>
+                  <p className="relative mt-3 text-sm leading-relaxed text-ink">
                     {[...connected].map((id) => techById(id)?.name).join(' · ')}
                   </p>
                 </>
@@ -142,7 +146,7 @@ export function Stack() {
           </aside>
         </div>
       </div>
-    </section>
+    </ToneSection>
   );
 }
 
@@ -151,7 +155,7 @@ function ContextLink({ context }: { context: ContextId }) {
   const info = contextLabels[context];
   const project = info.kind === 'project' ? projectBySlug(context) : undefined;
   return (
-    <li className="border-b border-line">
+    <li className="border-b border-line" style={toneStyle(info.tone)}>
       <button
         type="button"
         onClick={(e) => (project ? openCase(project.slug, e.currentTarget.getBoundingClientRect()) : scrollToSection('career'))}
@@ -162,7 +166,7 @@ function ContextLink({ context }: { context: ContextId }) {
         <Icon
           name={project ? 'arrow-up-right' : 'arrow-down'}
           size={14}
-          className="text-faint transition-[color,translate] duration-500 group-hover:text-accent"
+          className="text-faint transition-[color,translate] duration-500 group-hover:text-tone"
         />
       </button>
     </li>

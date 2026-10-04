@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import type { ArchitectureSpec } from '../../../content/types';
 import { useConnectors } from '../../../hooks/useConnectors';
+import { toneStyle } from '../../../lib/tones';
 import { cn } from '../../../lib/utils';
 
 /** Layered architecture diagram; connectors are measured from the live layout. */
@@ -8,6 +9,7 @@ export function ArchitectureDiagram({ spec }: { spec: ArchitectureSpec }) {
   const ref = useRef<HTMLDivElement>(null);
   const { paths } = useConnectors(ref, spec.edges);
   const [focus, setFocus] = useState<string | null>(null);
+  const toneOf = (id: string) => `var(--${spec.layers.find((l) => l.nodes.some((n) => n.id === id))?.tone ?? 'systems'})`;
   const linked = (id: string) => !focus || focus === id || spec.edges.some(([a, b]) => (a === focus && b === id) || (b === focus && a === id));
 
   return (
@@ -21,10 +23,8 @@ export function ArchitectureDiagram({ spec }: { spec: ArchitectureSpec }) {
                 key={p.key}
                 d={p.d}
                 fill="none"
-                className={cn(
-                  'transition-[stroke,opacity] duration-300',
-                  on && focus ? 'stroke-accent' : 'stroke-line-strong',
-                )}
+                className={cn('transition-[stroke,opacity] duration-300', !(on && focus) && 'stroke-line-strong')}
+                stroke={on && focus ? toneOf(focus) : undefined}
                 strokeWidth={on && focus ? 1.5 : 1.25}
                 strokeDasharray="4 5"
                 opacity={on ? 1 : 0.25}
@@ -35,9 +35,14 @@ export function ArchitectureDiagram({ spec }: { spec: ArchitectureSpec }) {
         </svg>
         <ol className="relative flex flex-col gap-10 sm:gap-12">
           {spec.layers.map((layer, li) => (
-            <li key={layer.label} className="grid gap-3 sm:grid-cols-[7.5rem_1fr] sm:items-center sm:gap-6">
-              <span className="text-meta text-faint">
-                <span className="text-accent">0{li + 1}</span> {layer.label}
+            <li
+              key={layer.label}
+              style={toneStyle(layer.tone)}
+              className="grid gap-3 sm:grid-cols-[7.5rem_1fr] sm:items-center sm:gap-6"
+            >
+              <span className="text-meta inline-flex items-center gap-2 text-faint">
+                <span aria-hidden="true" className="size-1.5 rounded-full bg-tone" />
+                <span className="text-tone">0{li + 1}</span> {layer.label}
               </span>
               <ul className="flex flex-wrap justify-center gap-3 sm:gap-5">
                 {layer.nodes.map((node) => (
@@ -50,8 +55,8 @@ export function ArchitectureDiagram({ spec }: { spec: ArchitectureSpec }) {
                       onFocus={() => setFocus(node.id)}
                       onBlur={() => setFocus(null)}
                       className={cn(
-                        'relative z-10 rounded-xl border bg-surface px-4 py-2.5 text-left transition-[border-color,opacity] duration-300',
-                        focus === node.id ? 'border-accent' : 'border-line-strong',
+                        'relative z-10 rounded-xl border bg-surface px-4 py-2.5 text-left shadow-[inset_0_1px_0_0_color-mix(in_oklab,var(--tone)_35%,transparent)] transition-[border-color,opacity] duration-300',
+                        focus === node.id ? 'border-tone' : 'border-line-strong hover:border-tone/50',
                         linked(node.id) ? 'opacity-100' : 'opacity-40',
                       )}
                     >

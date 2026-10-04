@@ -41,9 +41,9 @@ src/
   hooks/          media queries, active section, connectors, focus trap, …
   providers/      theme (persisted, follows OS until chosen) and UI state (palette, case studies, toasts)
   components/
-    primitives/   Button, Magnetic, Reveal, SplitReveal, TiltCard, Counter, SectionHeader, Icon, Chip
+    primitives/   Button, Magnetic, Reveal, SplitReveal, Counter, SectionHeader, ToneSection, Icon, Chip
     chrome/       navigation + mobile dock, command palette (⌘/Ctrl K), cursor, toasts, footer
-    sections/     hero (canvas scene), profile, work (+ case study overlay), career, approach (+ simulator), stack, contact
+    sections/     hero (3D bobblehead), profile, work (+ case study overlay), career, approach (+ simulator), stack, contact
 ```
 
 - **Hero bobblehead** (`sections/hero/bobble/`): a Three.js scene — a real-face sprite (cut out from the
@@ -60,7 +60,7 @@ src/
   workflow (round-robin assigner, SLA job, resolution stats). Lazy-loaded and warmed at idle time.
 - **Case studies** open in a dialog synced to `?case=<slug>`, so they are shareable and the back button
   closes them.
-- **Loading**: the boot overlay in `index.html` covers real work (app mount, fonts, first scene frame).
+- **Loading**: the boot overlay in `index.html` covers real work (app mount, fonts, the face image).
   Below-the-fold sections mount progressively in React transitions.
 
 ## Contact form

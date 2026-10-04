@@ -100,7 +100,7 @@ export function IdentityCard() {
               className="absolute inset-0 rounded-[inherit] opacity-60 transition-opacity duration-500 group-hover/card:opacity-100"
               style={{
                 background:
-                  'conic-gradient(from var(--rim, 210deg), var(--systems), var(--automation), var(--human), var(--interface), var(--data), var(--systems))',
+                  'conic-gradient(from var(--rim, 210deg), var(--accent), color-mix(in oklab, var(--accent) 25%, var(--line-strong)) 30%, var(--line-strong) 55%, color-mix(in oklab, var(--accent) 25%, var(--line-strong)) 80%, var(--accent))',
               }}
             />
 
@@ -115,13 +115,13 @@ export function IdentityCard() {
               </div>
 
               <div className="relative mt-3.5 min-h-0 flex-1">
-                {/* Coloured light spilling from behind the photo. */}
+                {/* Soft light spilling from behind the photo. */}
                 <span
                   aria-hidden="true"
                   className="absolute -inset-3 rounded-[1.5rem] opacity-50 blur-xl transition-opacity duration-700 group-hover/card:opacity-80"
                   style={{
                     background:
-                      'radial-gradient(60% 55% at 15% 10%, var(--human), transparent 70%), radial-gradient(55% 55% at 90% 95%, var(--interface), transparent 70%)',
+                      'radial-gradient(60% 55% at 20% 10%, color-mix(in oklab, var(--accent) 55%, transparent), transparent 70%)',
                   }}
                 />
                 <div className="relative size-full overflow-hidden rounded-[1.125rem] bg-[#c9ced6] shadow-[0_0_0_1px_rgb(23_21_15/0.12),0_12px_28px_-14px_rgb(23_21_15/0.55)]">

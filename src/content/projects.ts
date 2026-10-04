@@ -397,7 +397,7 @@ export const projects: Project[] = [
   },
   {
     slug: 'healthchain',
-    tone: 'signal',
+    tone: 'data',
     title: 'HealthChain',
     tagline:
       'A medical-records platform with role-based access for patients, doctors and admins — and a Solidity contract layer via Web3j.',

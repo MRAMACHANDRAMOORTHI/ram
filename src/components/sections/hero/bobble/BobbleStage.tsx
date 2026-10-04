@@ -10,10 +10,10 @@ import { GAGS, type GagId } from './gags';
 
 type FxTone = 'pink' | 'amber' | 'lime' | 'cyan';
 const FX_CLASS: Record<FxTone, string> = {
-  pink: 'text-human',
+  pink: 'text-accent',
   amber: 'text-automation',
-  lime: 'text-data',
-  cyan: 'text-interface',
+  lime: 'text-ink',
+  cyan: 'text-accent',
 };
 const AUTO_ORDER: GagId[] = ['bug', 'coffee', 'duck', 'deploy'];
 const AUTO_EVERY = 9500;
@@ -210,7 +210,7 @@ export default function BobbleStage({ ready, onLive }: { ready: boolean; onLive?
             aria-pressed={active === g.id}
             className={cn(
               'text-label inline-flex h-10 items-center gap-2 rounded-full border px-3.5 backdrop-blur-md transition-[background-color,border-color,color,translate] duration-300 hover:-translate-y-0.5',
-              active === g.id ? 'border-human bg-human/15 text-ink' : 'border-line-strong bg-bg/50 text-muted hover:border-human/60 hover:text-ink',
+              active === g.id ? 'border-accent bg-accent-soft text-ink' : 'border-line-strong bg-bg/50 text-muted hover:border-ink/40 hover:text-ink',
             )}
           >
             <span aria-hidden="true" className="text-base leading-none">

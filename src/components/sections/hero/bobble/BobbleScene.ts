@@ -4,6 +4,7 @@
  * paused off-screen; all geometry is low-poly and shadows are faked with blobs.
  */
 import {
+  ACESFilmicToneMapping,
   AdditiveBlending,
   BoxGeometry,
   CanvasTexture,
@@ -11,21 +12,19 @@ import {
   Color,
   ConeGeometry,
   CylinderGeometry,
-  DataTexture,
   DirectionalLight,
   Group,
   HemisphereLight,
+  LatheGeometry,
   Mesh,
   MeshBasicMaterial,
-  MeshToonMaterial,
-  NearestFilter,
+  MeshStandardMaterial,
   Object3D,
+  PCFSoftShadowMap,
   PerspectiveCamera,
-  PlaneGeometry,
-  PointLight,
+  PMREMGenerator,
   Quaternion,
   Raycaster,
-  RedFormat,
   Scene,
   Shape,
   ShapeGeometry,
@@ -40,6 +39,7 @@ import {
   WebGLRenderer,
   type Texture,
 } from 'three';
+import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js';
 import { BOOPS, Director, type Gag, type GagId } from './gags';
 
 export interface Anchor {
@@ -60,33 +60,57 @@ type Hit = 'head' | 'body' | 'mug' | 'button' | 'duck' | 'laptop' | 'bug' | null
 
 const UP = new Vector3(0, 1, 0);
 const DESK_Y = 0.75;
-const HEAD_ANCHOR = new Vector3(0, 1.96, 0.02);
+const HEAD_ANCHOR = new Vector3(0, 1.97, 0.14);
 const HEAD_H = 1.62;
 const HEAD_W = HEAD_H * (440 / 562);
 const LOOK = new Vector3(0, 2.02, 0.4);
 
 const PALETTE = {
-  suit: '#26306e',
-  lapel: '#1a2154',
-  shirt: '#f4f2ff',
-  tie: '#2f63ff',
-  skin: '#c88a62',
-  chair: '#3a2a86',
-  deskTop: '#2b2266',
-  deskFront: '#1c1747',
-  laptop: '#3b4063',
-  keys: '#23263d',
-  mug: '#f7f5ff',
-  mugBand: '#ff4fa3',
-  coffee: '#5b3420',
-  duck: '#ffd23f',
+  suit: '#1f2942',
+  lapel: '#18203a',
+  shirt: '#f2f3f5',
+  tie: '#1a35a0',
+  skin: '#c48a64',
+  chair: '#1b1c20',
+  deskTop: '#3a2a20',
+  deskFront: '#2c2018',
+  steel: '#1d1f24',
+  laptop: '#c3c7cd',
+  keys: '#1d1f23',
+  mug: '#f4f4f2',
+  mugBand: '#3b5bdb',
+  coffee: '#3b2416',
+  duck: '#ffd23a',
   beak: '#ff8a1f',
-  bug: '#e23b4e',
-  bugDark: '#2a1420',
-  rack: '#2b2f52',
-  extinguisher: '#e5263b',
-  button: '#ff3b5c',
-  buttonBase: '#3b4063',
+  bug: '#b3263a',
+  bugDark: '#1b1416',
+  rack: '#2a2d33',
+  extinguisher: '#d0202f',
+  button: '#e0223a',
+  buttonBase: '#2a2d33',
+};
+
+/** Surface finish per palette entry: [roughness, metalness]. */
+const FINISH: Record<string, [number, number]> = {
+  [PALETTE.suit]: [0.86, 0],
+  [PALETTE.lapel]: [0.7, 0],
+  [PALETTE.shirt]: [0.72, 0],
+  [PALETTE.tie]: [0.42, 0.05],
+  [PALETTE.skin]: [0.55, 0],
+  [PALETTE.chair]: [0.42, 0.05],
+  [PALETTE.deskTop]: [0.48, 0],
+  [PALETTE.deskFront]: [0.55, 0],
+  [PALETTE.steel]: [0.4, 0.7],
+  [PALETTE.laptop]: [0.3, 0.75],
+  [PALETTE.keys]: [0.7, 0.1],
+  [PALETTE.mug]: [0.16, 0],
+  [PALETTE.mugBand]: [0.2, 0],
+  [PALETTE.coffee]: [0.12, 0],
+  [PALETTE.duck]: [0.26, 0],
+  [PALETTE.beak]: [0.3, 0],
+  [PALETTE.rack]: [0.45, 0.55],
+  [PALETTE.extinguisher]: [0.28, 0.2],
+  [PALETTE.button]: [0.3, 0],
 };
 
 const rand = (a: number, b: number) => a + Math.random() * (b - a);
@@ -119,15 +143,6 @@ class Spring {
   }
 }
 
-function toonRamp() {
-  const t = new DataTexture(new Uint8Array([70, 150, 220, 255]), 4, 1, RedFormat);
-  t.minFilter = NearestFilter;
-  t.magFilter = NearestFilter;
-  t.generateMipmaps = false;
-  t.needsUpdate = true;
-  return t;
-}
-
 function radialTexture(inner: string, outer: string, size = 64) {
   const c = document.createElement('canvas');
   c.width = c.height = size;
@@ -148,8 +163,19 @@ function lidTexture() {
   c.width = 512;
   c.height = 320;
   const g = c.getContext('2d')!;
-  g.fillStyle = PALETTE.laptop;
+  // Brushed aluminium.
+  const brushed = g.createLinearGradient(0, 0, 512, 320);
+  brushed.addColorStop(0, '#cfd3d8');
+  brushed.addColorStop(0.5, '#b9bdc4');
+  brushed.addColorStop(1, '#c8ccd2');
+  g.fillStyle = brushed;
   g.fillRect(0, 0, 512, 320);
+  g.globalAlpha = 0.05;
+  for (let y = 0; y < 320; y += 2) {
+    g.fillStyle = y % 4 ? '#ffffff' : '#000000';
+    g.fillRect(0, y, 512, 1);
+  }
+  g.globalAlpha = 1;
   const sticker = (x: number, y: number, w: number, h: number, bg: string, fg: string, text: string, r = 18, rot = 0, size = 28) => {
     g.save();
     g.translate(x + w / 2, y + h / 2);
@@ -169,11 +195,10 @@ function lidTexture() {
     g.fillText(text, 0, 2);
     g.restore();
   };
-  sticker(40, 40, 150, 70, '#a48bff', '#140d33', 'Elixir', 34, -0.12, 32);
-  sticker(300, 30, 170, 64, '#ff4fa3', '#1b0410', 'MSR ●', 32, 0.08, 30);
-  sticker(60, 190, 230, 64, '#ffc23a', '#2a1a00', 'works on my machine', 14, 0.05, 22);
-  sticker(330, 150, 120, 120, '#2fd8f2', '#04212a', '</>', 60, -0.1, 46);
-  sticker(220, 112, 110, 54, '#a8ea3f', '#152600', 'Vue', 27, 0.14, 26);
+  sticker(46, 44, 150, 66, '#1d1f24', '#eef0f3', 'Elixir', 33, -0.1, 30);
+  sticker(306, 34, 160, 60, '#f4f4f2', '#121418', 'MSR', 30, 0.06, 30);
+  sticker(64, 196, 228, 60, '#e6b065', '#2a1a00', 'works on my machine', 12, 0.04, 21);
+  sticker(336, 156, 112, 112, '#3b5bdb', '#ffffff', '</>', 56, -0.08, 44);
   const t = new CanvasTexture(c);
   t.colorSpace = SRGBColorSpace;
   t.anisotropy = 4;
@@ -184,7 +209,6 @@ export class BobbleScene {
   private renderer: WebGLRenderer;
   private scene = new Scene();
   private camera = new PerspectiveCamera(30, 1, 0.1, 60);
-  private ramp = toonRamp();
   private director = new Director();
   private cb: SceneCallbacks;
 
@@ -198,6 +222,9 @@ export class BobbleScene {
   private drewFirst = false;
   private prepared = false;
   private disposed = false;
+  private envMap: Texture | null = null;
+  private key!: DirectionalLight;
+  private intro = 0;
 
   // Rig
   private body = new Group();
@@ -267,6 +294,16 @@ export class BobbleScene {
     this.renderer = new WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
     this.renderer.outputColorSpace = SRGBColorSpace;
     this.renderer.setClearColor(0x000000, 0);
+    this.renderer.toneMapping = ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.05;
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = PCFSoftShadowMap;
+    // Soft studio reflections for metal, ceramic and rubber.
+    const pmrem = new PMREMGenerator(this.renderer);
+    this.envMap = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    pmrem.dispose();
+    this.scene.environment = this.envMap;
+    this.scene.environmentIntensity = 0.55;
     this.camera.position.set(0, 2.45, 8.4);
     this.camera.lookAt(LOOK);
 
@@ -274,6 +311,12 @@ export class BobbleScene {
     this.buildSet();
     this.buildBody();
     this.buildProps();
+    this.scene.traverse((o) => {
+      const m = o as Mesh;
+      if (!m.isMesh || m.material instanceof MeshBasicMaterial) return;
+      m.castShadow = true;
+      m.receiveShadow = true;
+    });
   }
 
   /* ------------------------------ public ------------------------------ */
@@ -319,7 +362,8 @@ export class BobbleScene {
 
   setTheme(light: boolean) {
     const hemi = this.scene.getObjectByName('hemi') as HemisphereLight;
-    hemi.intensity = light ? 2.1 : 1.6;
+    hemi.intensity = light ? 0.7 : 0.35;
+    this.scene.environmentIntensity = light ? 0.8 : 0.55;
     this.requestFrame();
   }
 
@@ -428,90 +472,124 @@ export class BobbleScene {
     });
     textures.forEach((t) => t.dispose());
     materials.forEach((m) => m.dispose());
-    this.ramp.dispose();
+    this.envMap?.dispose();
     this.renderer.dispose();
   }
 
   /* ------------------------------ build ------------------------------- */
 
-  private toon(color: string, extra: Partial<{ emissive: string; emissiveIntensity: number }> = {}) {
-    return new MeshToonMaterial({ color: new Color(color), gradientMap: this.ramp, ...extra });
+  /** Physically based material with a finish (roughness/metalness) chosen per palette colour. */
+  private pbr(color: string, extra: Partial<{ emissive: string; emissiveIntensity: number; roughness: number; metalness: number }> = {}) {
+    const [roughness, metalness] = FINISH[color] ?? [0.6, 0];
+    const m = new MeshStandardMaterial({
+      color: new Color(color),
+      roughness: extra.roughness ?? roughness,
+      metalness: extra.metalness ?? metalness,
+    });
+    if (extra.emissive) {
+      m.emissive = new Color(extra.emissive);
+      m.emissiveIntensity = extra.emissiveIntensity ?? 1;
+    }
+    return m;
   }
 
   private buildLights() {
-    const hemi = new HemisphereLight('#c9c4ff', '#1a1640', 1.6);
+    const hemi = new HemisphereLight('#dfe6ff', '#1a1714', 0.35);
     hemi.name = 'hemi';
-    const key = new DirectionalLight('#fff4ea', 2.2);
-    key.position.set(3, 6, 5);
-    const pink = new PointLight('#ff4fa3', 14, 9, 1.6);
-    pink.position.set(-3.4, 3, -1.2);
-    const cyan = new PointLight('#2fd8f2', 12, 9, 1.6);
-    cyan.position.set(3.4, 2.4, -1.4);
-    this.scene.add(hemi, key, pink, cyan);
+    // Warm key with soft shadows, a cool rim from behind, a gentle fill from the left.
+    this.key = new DirectionalLight('#fff1e3', 2.7);
+    this.key.position.set(2.6, 6.2, 4.6);
+    this.key.castShadow = true;
+    this.key.shadow.mapSize.set(1024, 1024);
+    const cam = this.key.shadow.camera;
+    cam.left = -2.6;
+    cam.right = 2.6;
+    cam.top = 3.2;
+    cam.bottom = -0.6;
+    cam.near = 2;
+    cam.far = 16;
+    this.key.shadow.bias = -0.0004;
+    this.key.shadow.normalBias = 0.025;
+    this.key.shadow.radius = 5;
+    const rim = new DirectionalLight('#9fb4ff', 1.5);
+    rim.position.set(-3.2, 3.8, -4.2);
+    const fill = new DirectionalLight('#ffffff', 0.45);
+    fill.position.set(-4.5, 2.2, 3.2);
+    this.scene.add(hemi, this.key, rim, fill);
   }
 
   private buildSet() {
     // Chair back behind the character.
-    const chair = new Mesh(new CapsuleGeometry(0.55, 1.0, 6, 16), this.toon(PALETTE.chair));
+    const chair = new Mesh(new CapsuleGeometry(0.55, 1.0, 6, 16), this.pbr(PALETTE.chair));
     chair.scale.set(1.15, 1, 0.28);
     chair.position.set(0, 1.62, -0.66);
-    const headrest = new Mesh(new CapsuleGeometry(0.3, 0.5, 6, 12), this.toon(PALETTE.chair));
+    const headrest = new Mesh(new CapsuleGeometry(0.3, 0.5, 6, 12), this.pbr(PALETTE.chair));
     headrest.rotation.z = Math.PI / 2;
     headrest.scale.set(1, 1, 0.3);
     headrest.position.set(0, 2.62, -0.68);
     this.scene.add(chair, headrest);
 
     // Desk.
-    const top = new Mesh(new BoxGeometry(3.5, 0.12, 1.75), this.toon(PALETTE.deskTop));
+    const top = new Mesh(new BoxGeometry(3.5, 0.12, 1.75), this.pbr(PALETTE.deskTop));
     top.position.set(0, DESK_Y - 0.06, 0.66);
-    const front = new Mesh(new BoxGeometry(3.5, 0.46, 0.1), this.toon(PALETTE.deskFront));
+    const front = new Mesh(new BoxGeometry(3.5, 0.46, 0.1), this.pbr(PALETTE.deskFront));
     front.position.set(0, DESK_Y - 0.35, 1.5);
-    const edge = new Mesh(new BoxGeometry(3.52, 0.035, 0.035), new MeshBasicMaterial({ color: '#ff4fa3' }));
+    // Brushed-steel trim along the front edge, steel legs.
+    const edge = new Mesh(new BoxGeometry(3.52, 0.03, 0.03), this.pbr(PALETTE.steel));
     edge.position.set(0, DESK_Y - 0.02, 1.54);
-    const underglow = new Mesh(new BoxGeometry(3.4, 0.02, 0.02), new MeshBasicMaterial({ color: '#2fd8f2' }));
-    underglow.position.set(0, DESK_Y - 0.58, 1.55);
-    const legGeo = new BoxGeometry(0.12, 1.3, 0.12);
+    const legGeo = new BoxGeometry(0.09, 1.3, 0.09);
     const legs = [-1.62, 1.62].map((x) => {
-      const leg = new Mesh(legGeo, this.toon(PALETTE.deskFront));
+      const leg = new Mesh(legGeo, this.pbr(PALETTE.steel));
       leg.position.set(x, DESK_Y - 1.2, 1.38);
       return leg;
     });
-    this.scene.add(top, front, edge, underglow, ...legs);
+    top.receiveShadow = true;
+    this.scene.add(top, front, edge, ...legs);
 
-    // Blob shadow under the laptop.
-    const blob = new Mesh(
-      new PlaneGeometry(1.6, 1.0),
-      new MeshBasicMaterial({ map: radialTexture('rgba(0,0,0,0.45)', 'rgba(0,0,0,0)'), transparent: true, depthWrite: false }),
-    );
-    blob.rotation.x = -Math.PI / 2;
-    blob.position.set(0, DESK_Y + 0.002, 0.78);
-    this.scene.add(blob);
   }
 
   private buildBody() {
-    const suit = this.toon(PALETTE.suit);
+    const suit = this.pbr(PALETTE.suit);
     // Torso
-    this.torso = new Mesh(new CapsuleGeometry(0.56, 0.55, 8, 20), suit);
-    this.torso.scale.set(1.2, 0.86, 0.74);
-    this.torso.position.set(0, 1.16, 0);
+    // Lathe profile: waist, chest, shoulders, then the collar line.
+    const profile = [
+      [0.5, 0.36],
+      [0.56, 0.7],
+      [0.6, 1.05],
+      [0.64, 1.36],
+      [0.69, 1.56],
+      [0.66, 1.68],
+      [0.5, 1.8],
+      [0.3, 1.86],
+      [0.0, 1.88],
+    ].map(([x, y]) => new Vector2(x, y));
+    this.torso = new Mesh(new LatheGeometry(profile, 40), suit);
+    this.torso.scale.set(1, 1, 0.62);
     this.body.add(this.torso);
+
+    // Shirt collar around the neck.
+    const collarRing = new Mesh(new TorusGeometry(0.17, 0.035, 10, 28), this.pbr(PALETTE.shirt));
+    collarRing.rotation.x = Math.PI / 2 - 0.3;
+    collarRing.scale.set(1.05, 0.8, 1);
+    collarRing.position.set(0, 1.845, 0.12);
+    this.body.add(collarRing);
 
     // Shirt V, lapels and tie — tilted to sit on the chest's slope.
     const chest = new Group();
-    chest.position.set(0, 1.6, 0.37);
-    chest.rotation.x = -0.5;
+    chest.position.set(0, 1.56, 0.455);
+    chest.rotation.x = -0.26;
     const v = new Shape();
     v.moveTo(-0.3, 0.22);
     v.lineTo(0.3, 0.22);
-    v.lineTo(0, -0.4);
+    v.lineTo(0, -0.3);
     v.closePath();
-    const shirt = new Mesh(new ShapeGeometry(v), this.toon(PALETTE.shirt));
+    const shirt = new Mesh(new ShapeGeometry(v), this.pbr(PALETTE.shirt));
     const lapelShape = (dir: number) => {
       const s = new Shape();
       s.moveTo(dir * 0.3, 0.22);
       s.lineTo(dir * 0.5, 0.12);
-      s.lineTo(dir * 0.08, -0.46);
-      s.lineTo(0, -0.4);
+      s.lineTo(dir * 0.08, -0.36);
+      s.lineTo(0, -0.3);
       s.closePath();
       return s;
     };
@@ -522,11 +600,11 @@ export class BobbleScene {
       s.lineTo(d * 0.24, 0.26);
       s.lineTo(d * 0.1, 0.06);
       s.closePath();
-      const mesh = new Mesh(new ShapeGeometry(s), this.toon(PALETTE.shirt));
+      const mesh = new Mesh(new ShapeGeometry(s), this.pbr(PALETTE.shirt));
       mesh.position.z = 0.012;
       return mesh;
     });
-    const lapels = [-1, 1].map((d) => new Mesh(new ShapeGeometry(lapelShape(d)), this.toon(PALETTE.lapel)));
+    const lapels = [-1, 1].map((d) => new Mesh(new ShapeGeometry(lapelShape(d)), this.pbr(PALETTE.lapel)));
     lapels.forEach((l) => (l.position.z = 0.004));
     const t = new Shape();
     t.moveTo(-0.05, 0.16);
@@ -535,7 +613,7 @@ export class BobbleScene {
     t.lineTo(0, -0.28);
     t.lineTo(-0.07, -0.18);
     t.closePath();
-    const tie = new Mesh(new ShapeGeometry(t), this.toon(PALETTE.tie));
+    const tie = new Mesh(new ShapeGeometry(t), this.pbr(PALETTE.tie));
     tie.position.z = 0.008;
     chest.add(shirt, ...lapels, tie, ...collar);
     this.body.add(chest);
@@ -545,7 +623,7 @@ export class BobbleScene {
     for (const side of [-1, 1]) {
       const upper = new Mesh(armGeo, suit);
       const fore = new Mesh(armGeo, suit);
-      const hand = new Mesh(new SphereGeometry(0.12, 14, 12), this.toon(PALETTE.skin));
+      const hand = new Mesh(new SphereGeometry(0.12, 14, 12), this.pbr(PALETTE.skin));
       this.body.add(upper, fore, hand);
       if (side < 0) {
         this.armL = [upper, fore];
@@ -557,7 +635,7 @@ export class BobbleScene {
     }
 
     // Head: a camera-facing sprite of the real face.
-    this.headMat = new SpriteMaterial({ transparent: true, depthWrite: false, opacity: 0 });
+    this.headMat = new SpriteMaterial({ transparent: true, depthWrite: false, opacity: 0, toneMapped: false });
     this.head = new Sprite(this.headMat);
     this.head.scale.set(HEAD_W, HEAD_H, 1);
     this.head.renderOrder = 10;
@@ -569,20 +647,20 @@ export class BobbleScene {
 
   private buildProps() {
     // Laptop: base, keys and a lid whose back (facing us) wears stickers.
-    const base = new Mesh(new BoxGeometry(1.2, 0.05, 0.72), this.toon(PALETTE.laptop));
+    const base = new Mesh(new BoxGeometry(1.2, 0.05, 0.72), this.pbr(PALETTE.laptop));
     base.position.set(0, DESK_Y + 0.025, 0.76);
-    const keys = new Mesh(new BoxGeometry(1.02, 0.012, 0.4), this.toon(PALETTE.keys));
+    const keys = new Mesh(new BoxGeometry(1.02, 0.012, 0.4), this.pbr(PALETTE.keys));
     keys.position.set(0, DESK_Y + 0.055, 0.7);
     const lidGroup = new Group();
     lidGroup.position.set(0, DESK_Y + 0.05, 1.11);
     lidGroup.rotation.x = 0.2;
     this.lid = new Mesh(new BoxGeometry(1.2, 0.74, 0.04), [
-      this.toon(PALETTE.laptop),
-      this.toon(PALETTE.laptop),
-      this.toon(PALETTE.laptop),
-      this.toon(PALETTE.laptop),
-      new MeshBasicMaterial({ map: lidTexture() }),
-      new MeshBasicMaterial({ color: '#7fdcff' }),
+      this.pbr(PALETTE.laptop),
+      this.pbr(PALETTE.laptop),
+      this.pbr(PALETTE.laptop),
+      this.pbr(PALETTE.laptop),
+      new MeshStandardMaterial({ map: lidTexture(), roughness: 0.38, metalness: 0.35 }),
+      new MeshBasicMaterial({ color: '#d6e2ff', toneMapped: false }),
     ]);
     this.lid.position.y = 0.37;
     lidGroup.add(this.lid);
@@ -591,13 +669,13 @@ export class BobbleScene {
     this.hittables.push([this.laptop, 'laptop']);
 
     // Mug with steam.
-    const cup = new Mesh(new CylinderGeometry(0.15, 0.13, 0.32, 18), this.toon(PALETTE.mug));
+    const cup = new Mesh(new CylinderGeometry(0.15, 0.13, 0.32, 18), this.pbr(PALETTE.mug));
     cup.position.y = 0.16;
-    const band = new Mesh(new CylinderGeometry(0.152, 0.15, 0.07, 18), this.toon(PALETTE.mugBand));
+    const band = new Mesh(new CylinderGeometry(0.152, 0.15, 0.07, 18), this.pbr(PALETTE.mugBand));
     band.position.y = 0.2;
-    const coffee = new Mesh(new CylinderGeometry(0.13, 0.13, 0.01, 18), this.toon(PALETTE.coffee));
+    const coffee = new Mesh(new CylinderGeometry(0.13, 0.13, 0.01, 18), this.pbr(PALETTE.coffee));
     coffee.position.y = 0.315;
-    const handle = new Mesh(new TorusGeometry(0.075, 0.025, 8, 16), this.toon(PALETTE.mug));
+    const handle = new Mesh(new TorusGeometry(0.075, 0.025, 8, 16), this.pbr(PALETTE.mug));
     handle.position.set(0.16, 0.17, 0);
     this.mug.add(cup, band, coffee, handle);
     this.mug.position.set(-1.2, DESK_Y, 0.95);
@@ -621,13 +699,13 @@ export class BobbleScene {
     }
 
     // Rubber duck.
-    const duckMat = this.toon(PALETTE.duck);
+    const duckMat = this.pbr(PALETTE.duck);
     const dBody = new Mesh(new SphereGeometry(0.2, 18, 14), duckMat);
     dBody.scale.set(1.15, 0.85, 1);
     dBody.position.y = 0.16;
     const dHead = new Mesh(new SphereGeometry(0.13, 16, 12), duckMat);
     dHead.position.set(0.02, 0.38, 0.06);
-    const beak = new Mesh(new ConeGeometry(0.05, 0.12, 10), this.toon(PALETTE.beak));
+    const beak = new Mesh(new ConeGeometry(0.05, 0.12, 10), this.pbr(PALETTE.beak));
     beak.rotation.x = Math.PI / 2;
     beak.position.set(0.02, 0.36, 0.2);
     const eyeMat = new MeshBasicMaterial({ color: '#141022' });
@@ -645,9 +723,9 @@ export class BobbleScene {
     this.hittables.push([this.duck, 'duck']);
 
     // Big red deploy button.
-    const bBase = new Mesh(new CylinderGeometry(0.2, 0.22, 0.08, 20), this.toon(PALETTE.buttonBase));
+    const bBase = new Mesh(new CylinderGeometry(0.2, 0.22, 0.08, 20), this.pbr(PALETTE.buttonBase));
     bBase.position.y = 0.04;
-    this.buttonCap = new Mesh(new CylinderGeometry(0.15, 0.15, 0.09, 20), this.toon(PALETTE.button, { emissive: '#ff0030', emissiveIntensity: 0.25 }));
+    this.buttonCap = new Mesh(new CylinderGeometry(0.15, 0.15, 0.09, 20), this.pbr(PALETTE.button, { emissive: '#ff0030', emissiveIntensity: 0.25 }));
     this.buttonCap.position.y = 0.12;
     this.button.add(bBase, this.buttonCap);
     this.button.position.set(0.95, DESK_Y, 1.0);
@@ -657,13 +735,13 @@ export class BobbleScene {
     this.hittables.push([this.button, 'button']);
 
     // Server rack (Friday deploy) — enters from the right.
-    const rackBody = new Mesh(new BoxGeometry(0.72, 1.35, 0.7), this.toon(PALETTE.rack));
+    const rackBody = new Mesh(new BoxGeometry(0.72, 1.35, 0.7), this.pbr(PALETTE.rack));
     rackBody.position.y = 0.675;
     this.rack.add(rackBody);
     for (let r = 0; r < 5; r++) {
-      const slot = new Mesh(new BoxGeometry(0.6, 0.17, 0.02), this.toon('#1c1f3a'));
+      const slot = new Mesh(new BoxGeometry(0.6, 0.17, 0.02), this.pbr('#1c1f3a'));
       slot.position.set(0, 0.22 + r * 0.24, 0.36);
-      const led = new Mesh(new BoxGeometry(0.05, 0.05, 0.02), new MeshBasicMaterial({ color: '#3df2c2' }));
+      const led = new Mesh(new BoxGeometry(0.05, 0.05, 0.02), new MeshBasicMaterial({ color: '#5fd0a0', toneMapped: false }));
       led.position.set(0.22, 0.22 + r * 0.24, 0.372);
       this.leds.push(led);
       this.rack.add(slot, led);
@@ -687,11 +765,11 @@ export class BobbleScene {
     }
 
     // Fire extinguisher.
-    const can = new Mesh(new CylinderGeometry(0.13, 0.13, 0.62, 16), this.toon(PALETTE.extinguisher));
+    const can = new Mesh(new CylinderGeometry(0.13, 0.13, 0.62, 16), this.pbr(PALETTE.extinguisher));
     can.position.y = 0.31;
-    const top = new Mesh(new CylinderGeometry(0.05, 0.08, 0.1, 10), this.toon('#2b2f52'));
+    const top = new Mesh(new CylinderGeometry(0.05, 0.08, 0.1, 10), this.pbr('#2b2f52'));
     top.position.y = 0.66;
-    const hose = new Mesh(new CylinderGeometry(0.025, 0.025, 0.36, 8), this.toon('#1b1d33'));
+    const hose = new Mesh(new CylinderGeometry(0.025, 0.025, 0.36, 8), this.pbr('#1b1d33'));
     hose.position.set(0.12, 0.66, 0);
     hose.rotation.z = -1.1;
     this.extinguisher.add(can, top, hose);
@@ -703,12 +781,12 @@ export class BobbleScene {
     // The bug and its offspring.
     const makeBug = () => {
       const g = new Group();
-      const shell = new Mesh(new SphereGeometry(0.11, 14, 10), this.toon(PALETTE.bug));
+      const shell = new Mesh(new SphereGeometry(0.11, 14, 10), this.pbr(PALETTE.bug));
       shell.scale.set(1, 0.55, 1.3);
       shell.position.y = 0.06;
-      const head = new Mesh(new SphereGeometry(0.055, 10, 8), this.toon(PALETTE.bugDark));
+      const head = new Mesh(new SphereGeometry(0.055, 10, 8), this.pbr(PALETTE.bugDark));
       head.position.set(0, 0.06, 0.15);
-      const legMat = this.toon(PALETTE.bugDark);
+      const legMat = this.pbr(PALETTE.bugDark);
       for (let i = 0; i < 6; i++) {
         const leg = new Mesh(new CylinderGeometry(0.008, 0.008, 0.14, 4), legMat);
         const side = i < 3 ? -1 : 1;
@@ -877,7 +955,7 @@ export class BobbleScene {
           this.handROverride = null;
           this.buttonCap.position.y = 0.12;
           this.fireLevel = 1;
-          this.leds.forEach((l) => (l.material as MeshBasicMaterial).color.set('#ff3b5c'));
+          this.leds.forEach((l) => (l.material as MeshBasicMaterial).color.set('#ff4545'));
           this.vibrate = 1;
           this.fx('PROD IS ON FIRE', fireTop.clone().add(new Vector3(0, 0.7, 0)), 'amber');
         }],
@@ -891,7 +969,7 @@ export class BobbleScene {
         [6.0, () => {
           this.foamOn = false;
           this.vibrate = 0;
-          this.leds.forEach((l) => (l.material as MeshBasicMaterial).color.set('#3df2c2'));
+          this.leds.forEach((l) => (l.material as MeshBasicMaterial).color.set('#5fd0a0'));
           this.say('Rolled back. Calmly.');
         }],
         [7.8, () => this.say(null)],
@@ -913,7 +991,7 @@ export class BobbleScene {
         this.vibrate = 0;
         this.typing = 1;
         this.handROverride = null;
-        this.leds.forEach((l) => (l.material as MeshBasicMaterial).color.set('#3df2c2'));
+        this.leds.forEach((l) => (l.material as MeshBasicMaterial).color.set('#5fd0a0'));
         this.fx(null);
         this.say(null);
       },
@@ -1136,12 +1214,21 @@ export class BobbleScene {
       (o.material as SpriteMaterial).opacity = 1 - p * 0.6;
     });
 
+    // Intro: the studio light comes up as the camera dollies in.
+    if (this.intro < 1) this.intro = this.reduced ? 1 : Math.min(1, this.intro + dt / 2.4);
+    const io = ease(this.intro);
+    this.key.intensity = 2.7 * (0.3 + 0.7 * io);
+
     // Camera: gentle parallax and impact shake.
     this.camX += (this.pointerX * 0.9 - this.camX) * (dt ? 1 - Math.exp(-dt * 3) : 1);
     this.camY += (-this.pointerY * 0.35 - this.camY) * (dt ? 1 - Math.exp(-dt * 3) : 1);
     this.shake = Math.max(0, this.shake - dt);
     const sh = this.shake * 0.25;
-    this.camera.position.set(this.camX + rand(-sh, sh), 2.45 + this.camY + rand(-sh, sh), 8.4);
+    this.camera.position.set(
+      this.camX + rand(-sh, sh) + (1 - io) * 1.2,
+      2.45 + this.camY + rand(-sh, sh) + (1 - io) * 0.9,
+      8.4 + (1 - io) * 3.4,
+    );
     this.camera.lookAt(LOOK);
 
     this.emitAnchors();

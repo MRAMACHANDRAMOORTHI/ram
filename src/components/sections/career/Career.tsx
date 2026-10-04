@@ -62,7 +62,7 @@ export function Career() {
             <span aria-hidden="true" className="absolute top-2 bottom-2 left-[5px] w-px bg-line lg:hidden" />
             <m.span
               aria-hidden="true"
-              className="absolute top-2 bottom-2 left-[5px] w-px origin-top bg-gradient-to-b from-systems via-automation to-data lg:hidden"
+              className="absolute top-2 bottom-2 left-[5px] w-px origin-top bg-accent lg:hidden"
               style={{ scaleY: scrollYProgress }}
             />
             {roles.map((role, i) => (
@@ -111,7 +111,7 @@ function StickyPanel({
 
       <ol className="relative mt-12">
         <span className="absolute top-0 bottom-0 left-[5px] w-px bg-line" />
-        <m.span className="absolute top-0 bottom-0 left-[5px] w-px origin-top bg-gradient-to-b from-systems via-automation to-data" style={{ scaleY: progress }} />
+        <m.span className="absolute top-0 bottom-0 left-[5px] w-px origin-top bg-accent" style={{ scaleY: progress }} />
         {roles.map((r, i) => (
           <li key={r.id}>
             <button

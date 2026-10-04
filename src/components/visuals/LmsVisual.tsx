@@ -8,7 +8,7 @@ const FILES: Array<[string, string, 'done' | 'running' | 'queued', number]> = [
   ['Unit 2 / 01 Lecture.mp4', 'Video lesson', 'running', 64],
   ['Unit 2 / 02 Notes.docx', 'Document', 'queued', 0],
 ];
-const ROSE = '#b8336a';
+const ROSE = '#2b52d0';
 
 /** Illustration of the ekVana admin portal's Google Drive import, built from the project's docs. */
 export function LmsVisual() {
@@ -20,7 +20,7 @@ export function LmsVisual() {
           <span className="size-[0.7em] rounded-[0.2em]" style={{ background: ROSE }} />
           ekVana
         </div>
-        <div className="mt-[0.5em] inline-flex w-fit items-center gap-[0.3em] rounded-full bg-[#fdf2f7] px-[0.55em] py-[0.15em] text-[0.62em] font-medium" style={{ color: ROSE }}>
+        <div className="mt-[0.5em] inline-flex w-fit items-center gap-[0.3em] rounded-full bg-[#eef2ff] px-[0.55em] py-[0.15em] text-[0.62em] font-medium" style={{ color: ROSE }}>
           tenant · sastra
         </div>
         <div className="mt-[1em] flex flex-col gap-[0.15em]">
@@ -28,7 +28,7 @@ export function LmsVisual() {
             <div
               key={n}
               className="rounded-[0.35em] px-[0.5em] py-[0.28em] text-[0.68em]"
-              style={n === 'Courses' ? { background: '#fdf2f7', color: ROSE, fontWeight: 600 } : { color: '#475569' }}
+              style={n === 'Courses' ? { background: '#eef2ff', color: ROSE, fontWeight: 600 } : { color: '#475569' }}
             >
               {n}
             </div>

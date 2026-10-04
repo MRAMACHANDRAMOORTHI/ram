@@ -13,76 +13,76 @@
 :root,
 :root[data-theme='dark'] {
   color-scheme: dark;
-  /* Neon pop: deep navy night, lit in electric colour. */
-  --bg: #080a1c;
-  --bg-raised: #0d1026;
-  --surface: #121534;
-  --surface-2: #191d42;
-  --glass: rgb(18 21 52 / 0.62);
-  --line: rgb(196 200 255 / 0.1);
-  --line-strong: rgb(196 200 255 / 0.2);
-  --ink: #f3f2ff;
-  --muted: #aeb0d6;
-  --faint: #8a8dc0;
-  --accent: #ff4fa3;
-  --accent-ink: #1b0410;
-  --accent-soft: rgb(255 79 163 / 0.14);
-  --signal: #3df2c2;
-  --signal-soft: rgb(61 242 194 / 0.12);
-  --danger: #ff7a8a;
-  --glow-accent: rgb(255 79 163 / 0.3);
-  --glow-signal: rgb(61 242 194 / 0.2);
-  --elev-lg: 0 30px 80px -20px rgb(2 3 15 / 0.75), 0 0 0 1px rgb(196 200 255 / 0.05);
-  --elev-md: 0 14px 40px -12px rgb(2 3 15 / 0.7);
-  --grain-opacity: 0.045;
-  --card-paper: #f4f1ff;
-  --card-paper-ink: #1a1433;
+  /* Studio graphite: neutral, cool, quiet — one blue accent, amber used sparingly. */
+  --bg: #0b0c0e;
+  --bg-raised: #101114;
+  --surface: #15171b;
+  --surface-2: #1c1f24;
+  --glass: rgb(16 17 20 / 0.66);
+  --line: rgb(255 255 255 / 0.08);
+  --line-strong: rgb(255 255 255 / 0.15);
+  --ink: #eef0f3;
+  --muted: #a2a7b0;
+  --faint: #858a94;
+  --accent: #6f8fff;
+  --accent-ink: #0b0c0e;
+  --accent-soft: rgb(111 143 255 / 0.12);
+  --signal: #5fd0a0;
+  --signal-soft: rgb(95 208 160 / 0.12);
+  --danger: #ff8a7a;
+  --glow-accent: rgb(111 143 255 / 0.22);
+  --glow-signal: rgb(95 208 160 / 0.14);
+  --elev-lg: 0 30px 80px -20px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.04);
+  --elev-md: 0 14px 40px -12px rgb(0 0 0 / 0.65);
+  --grain-opacity: 0.04;
+  --card-paper: #eceef2;
+  --card-paper-ink: #121418;
 
-  /* Domain tones. Each names a concept, not a decoration:
+  /* Domain tones, held to two hue families (blue, amber) plus green for healthy state:
      systems (backend) · interface (frontend) · data · automation (jobs, workflows, AI)
      · signal (responses, healthy state) · human (people, profile, career). */
-  --systems: #a48bff;
-  --interface: #2fd8f2;
-  --data: #a8ea3f;
-  --automation: #ffc23a;
-  --human: #ff5fa8;
+  --systems: #6f8fff;
+  --interface: #a9bbff;
+  --data: #9db0c6;
+  --automation: #e6b065;
+  --human: #efc48d;
   --tone: var(--systems);
-  --tone-glow-strength: 28%;
+  --tone-glow-strength: 16%;
 }
 
 :root[data-theme='light'] {
   color-scheme: light;
-  /* Candy: warm cream with saturated, cartoon-bright colour (all ≥ 4.5:1 on every surface). */
-  --bg: #fff8f0;
-  --bg-raised: #fffcf7;
+  /* Gallery white: soft neutral paper, carbon ink, the same blue and amber, deepened. */
+  --bg: #f6f6f4;
+  --bg-raised: #fbfbfa;
   --surface: #ffffff;
-  --surface-2: #f6ecdf;
-  --glass: rgb(255 252 247 / 0.74);
-  --line: rgb(26 20 51 / 0.1);
-  --line-strong: rgb(26 20 51 / 0.2);
-  --ink: #1a1433;
-  --muted: #514a6b;
-  --faint: #655e80;
-  --accent: #cc1f68;
+  --surface-2: #ebebe8;
+  --glass: rgb(251 251 250 / 0.76);
+  --line: rgb(18 20 24 / 0.1);
+  --line-strong: rgb(18 20 24 / 0.18);
+  --ink: #121418;
+  --muted: #4f5560;
+  --faint: #626874;
+  --accent: #2b52d0;
   --accent-ink: #ffffff;
-  --accent-soft: rgb(204 31 104 / 0.09);
-  --signal: #0b7a5a;
-  --signal-soft: rgb(11 122 90 / 0.1);
+  --accent-soft: rgb(43 82 208 / 0.08);
+  --signal: #0b7553;
+  --signal-soft: rgb(11 117 83 / 0.1);
   --danger: #b4232f;
-  --glow-accent: rgb(204 31 104 / 0.16);
-  --glow-signal: rgb(11 122 90 / 0.12);
-  --elev-lg: 0 30px 70px -28px rgb(70 40 110 / 0.3), 0 0 0 1px rgb(26 20 51 / 0.06);
-  --elev-md: 0 14px 34px -16px rgb(70 40 110 / 0.26);
-  --grain-opacity: 0.06;
+  --glow-accent: rgb(43 82 208 / 0.12);
+  --glow-signal: rgb(11 117 83 / 0.1);
+  --elev-lg: 0 30px 70px -28px rgb(20 24 40 / 0.28), 0 0 0 1px rgb(18 20 24 / 0.06);
+  --elev-md: 0 14px 34px -16px rgb(20 24 40 / 0.24);
+  --grain-opacity: 0.05;
   --card-paper: #ffffff;
-  --card-paper-ink: #1a1433;
+  --card-paper-ink: #121418;
 
-  --systems: #6a3be0;
-  --interface: #07709a;
-  --data: #3b7a0b;
-  --automation: #9e5800;
-  --human: #c81e6a;
-  --tone-glow-strength: 16%;
+  --systems: #2b52d0;
+  --interface: #4a5ab0;
+  --data: #4a5b70;
+  --automation: #93560a;
+  --human: #8a5410;
+  --tone-glow-strength: 10%;
 }
 
 @theme inline {
@@ -252,7 +252,7 @@
 
 /* Text filled with a slow light sweep between tones (used for a single keyword at a time). */
 @utility text-tone-gradient {
-  background-image: linear-gradient(100deg, var(--human), var(--systems) 50%, var(--interface));
+  background-image: linear-gradient(100deg, var(--accent), var(--interface));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

@@ -16,7 +16,7 @@ export const contextLabels: Record<ContextId, { label: string; kind: 'role' | 'p
   aims: { label: 'AIMS · Ardhika', kind: 'project', tone: 'data' },
   cict: { label: 'E-Learning · CICT', kind: 'project', tone: 'automation' },
   retech: { label: 'APIs · RETECH', kind: 'role', tone: 'data' },
-  healthchain: { label: 'HealthChain', kind: 'project', tone: 'signal' },
+  healthchain: { label: 'HealthChain', kind: 'project', tone: 'data' },
   scholorsphere: { label: 'Scholorsphere', kind: 'project', tone: 'interface' },
 };
 

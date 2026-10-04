@@ -67,28 +67,16 @@ export function Hero() {
       aria-labelledby="hero-title"
       className="relative isolate flex min-h-[100svh] flex-col overflow-hidden pt-[var(--nav-h)]"
     >
-      {/* Neon night: pools of the domain colours, static (no repaint cost). */}
+      {/* Studio lighting: one soft key pool behind the desk, falling off into a vignette. Static. */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 -z-10"
         style={{
           background: [
-            'radial-gradient(36% 46% at 70% 42%, color-mix(in oklab, var(--systems) var(--tone-glow-strength), transparent), transparent 72%)',
-            'radial-gradient(30% 36% at 92% 78%, color-mix(in oklab, var(--interface) var(--tone-glow-strength), transparent), transparent 72%)',
-            'radial-gradient(30% 34% at 48% 96%, color-mix(in oklab, var(--human) var(--tone-glow-strength), transparent), transparent 72%)',
-            'radial-gradient(26% 30% at 4% 8%, color-mix(in oklab, var(--human) var(--tone-glow-strength), transparent), transparent 72%)',
+            'radial-gradient(38% 52% at 72% 46%, color-mix(in oklab, var(--ink) 7%, transparent), transparent 70%)',
+            'radial-gradient(30% 40% at 72% 40%, color-mix(in oklab, var(--accent) var(--tone-glow-strength), transparent), transparent 72%)',
+            'radial-gradient(120% 90% at 50% 40%, transparent 55%, color-mix(in oklab, var(--bg) 70%, black) 100%)',
           ].join(','),
-        }}
-      />
-      {/* A perspective floor grid under the desk. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-[38%] opacity-40 [mask-image:linear-gradient(to_top,black,transparent)]"
-        style={{
-          background:
-            'linear-gradient(transparent 0 calc(100% - 1px), color-mix(in oklab, var(--systems) 50%, transparent) 0) 0 0 / 100% 2.6rem, linear-gradient(90deg, transparent 0 calc(100% - 1px), color-mix(in oklab, var(--interface) 40%, transparent) 0) 0 0 / 4rem 100%',
-          transform: 'perspective(500px) rotateX(58deg)',
-          transformOrigin: 'bottom',
         }}
       />
 
@@ -128,7 +116,7 @@ export function Hero() {
           {/* 1 · Identity */}
           <m.div {...enter(0)}>
             <p className="flex items-center gap-3 text-[clamp(1.125rem,0.95rem+0.7vw,1.5rem)] font-medium tracking-[-0.02em] text-ink">
-              <span aria-hidden="true" className="h-0.5 w-8 rounded-full bg-gradient-to-r from-human via-systems to-interface" />
+              <span aria-hidden="true" className="h-0.5 w-8 rounded-full bg-accent" />
               {profile.name}
             </p>
             <p className="text-meta mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 pl-11 text-muted">
@@ -147,7 +135,7 @@ export function Hero() {
             play={ready}
             delay={0.12}
             stagger={0.08}
-            className="mt-8 text-[clamp(2.9rem,1.2rem+5vw,4.4rem)] leading-[0.94] font-medium tracking-[-0.052em] outline-none lg:text-[min(5.15vw,4.6rem)] [&_.serif-em]:text-tone-gradient [&_.serif-em]:pr-[0.08em]"
+            className="mt-8 text-[clamp(2.9rem,1.2rem+5vw,4.4rem)] leading-[0.94] font-medium tracking-[-0.052em] outline-none lg:text-[min(5.15vw,4.6rem)] [&_.serif-em]:text-accent [&_.serif-em]:pr-[0.08em]"
           />
           <m.p {...enter(0.55)} className="serif-em mt-3 text-[clamp(1.25rem,1rem+0.8vw,1.75rem)] text-muted">
             (Even on Fridays. Mostly.)

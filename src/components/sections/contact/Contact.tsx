@@ -43,9 +43,7 @@ export function Contact() {
         className="pointer-events-none absolute inset-0 -z-10"
         style={{
           background: [
-            'radial-gradient(45% 40% at 88% 92%, color-mix(in oklab, var(--systems) var(--tone-glow-strength), transparent), transparent 70%)',
-            'radial-gradient(40% 40% at 60% 100%, color-mix(in oklab, var(--human) var(--tone-glow-strength), transparent), transparent 70%)',
-            'radial-gradient(35% 35% at 4% 8%, color-mix(in oklab, var(--interface) calc(var(--tone-glow-strength) * 0.8), transparent), transparent 70%)',
+            'radial-gradient(50% 45% at 85% 95%, color-mix(in oklab, var(--accent) var(--tone-glow-strength), transparent), transparent 70%)',
           ].join(','),
           opacity: 0.75,
         }}

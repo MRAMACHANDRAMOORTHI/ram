@@ -106,7 +106,7 @@ function DesktopNav({ active, scrolled, progress }: { active: string | null; scr
           </ul>
           <m.span
             aria-hidden="true"
-            className="absolute inset-x-5 -bottom-px h-px origin-left bg-gradient-to-r from-systems via-automation to-human"
+            className="absolute inset-x-5 -bottom-px h-px origin-left bg-accent"
             style={{ scaleX: progress, opacity: scrolled ? 1 : 0 }}
           />
         </nav>
@@ -158,7 +158,7 @@ function MobileBar({ scrolled, progress }: { scrolled: boolean; progress: Progre
       </div>
       <m.span
         aria-hidden="true"
-        className="absolute inset-x-0 bottom-0 h-px origin-left bg-gradient-to-r from-systems via-automation to-human"
+        className="absolute inset-x-0 bottom-0 h-px origin-left bg-accent"
         style={{ scaleX: progress }}
       />
     </header>

@@ -43,14 +43,14 @@ src/
   components/
     primitives/   Button, Magnetic, Reveal, SplitReveal, Counter, SectionHeader, ToneSection, Icon, Chip
     chrome/       navigation + mobile dock, command palette (⌘/Ctrl K), cursor, toasts, footer
-    sections/     hero (3D bobblehead), profile, work (+ case study overlay), career, approach (+ simulator), stack, contact
+    sections/     hero (3D desk scene), profile, work (+ case study overlay), career, approach (+ simulator), stack, contact
 ```
 
-- **Hero bobblehead** (`sections/hero/bobble/`): a Three.js scene — a real-face sprite (cut out from the
-  portrait) on a toon-shaded body, with four comedy gags (bug squash, Friday deploy, coffee overload,
-  rubber duck) driven by a small timeline `Director`. The chunk lazy-loads after first paint, compiles
-  shaders asynchronously, pauses off-screen and in hidden tabs, and falls back to a bobbing 2D poster
-  without WebGL or under `prefers-reduced-motion` (gag buttons then show the punchline only).
+- **Hero desk scene** (`sections/hero/bobble/`): a Three.js studio scene with the real portrait cutout at
+  true proportions, seated at a walnut desk behind a laptop, with soft shadows, filmic lighting and four
+  comedy gags (bug squash, Friday deploy, coffee overload, rubber duck) driven by a small timeline
+  `Director`. The chunk lazy-loads after first paint, compiles shaders asynchronously, pauses off-screen
+  and in hidden tabs, and falls back to a 2D poster without WebGL or under `prefers-reduced-motion`.
 - **Domain tones** (`styles/index.css`, `lib/tones.ts`): systems, interface, data, automation, signal and
   human colours, each tied to a concept. Sections, projects, roles and stack groups carry a tone; every
   text tone passes WCAG AA in both themes.
@@ -60,7 +60,7 @@ src/
   workflow (round-robin assigner, SLA job, resolution stats). Lazy-loaded and warmed at idle time.
 - **Case studies** open in a dialog synced to `?case=<slug>`, so they are shareable and the back button
   closes them.
-- **Loading**: the boot overlay in `index.html` covers real work (app mount, fonts, the face image).
+- **Loading**: the boot overlay in `index.html` covers real work (app mount, fonts, the portrait).
   Below-the-fold sections mount progressively in React transitions.
 
 ## Contact form

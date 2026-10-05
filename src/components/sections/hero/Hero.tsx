@@ -1,6 +1,6 @@
 import { m, useScroll, useTransform } from 'framer-motion';
 import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
-import headUrl from '../../../assets/head.webp';
+import personUrl from '../../../assets/person.webp';
 import { profile } from '../../../content/profile';
 import type { Tone } from '../../../content/types';
 import { useBootReady } from '../../../hooks/useBootReady';
@@ -33,7 +33,7 @@ export function Hero() {
   // The loader waits for the face (preloaded), never for WebGL.
   useEffect(() => {
     const img = new Image();
-    img.src = headUrl;
+    img.src = personUrl;
     img
       .decode()
       .catch(() => undefined)
@@ -65,7 +65,7 @@ export function Hero() {
       id="top"
       ref={ref}
       aria-labelledby="hero-title"
-      className="relative isolate flex min-h-[100svh] flex-col overflow-hidden pt-[var(--nav-h)]"
+      className="relative isolate flex flex-col overflow-hidden pt-[var(--nav-h)] lg:h-[min(100svh,860px)] lg:min-h-[600px]"
     >
       {/* Studio lighting: one soft key pool behind the desk, falling off into a vignette. Static. */}
       <div
@@ -84,7 +84,7 @@ export function Hero() {
         {/* The 3D me */}
         <m.div
           style={{ y: stageY, opacity: stageOpacity }}
-          className="relative order-1 -mx-[var(--gutter)] h-[min(118vw,540px)] sm:h-[min(88vw,640px)] lg:order-2 lg:col-span-7 lg:mx-0 lg:h-[min(calc(100svh-var(--nav-h)-2rem),800px)]"
+          className="relative order-1 -mx-[var(--gutter)] h-[min(96vw,420px)] sm:h-[min(70vw,520px)] lg:order-2 lg:col-span-7 lg:mx-0 lg:h-[min(calc(100svh-var(--nav-h)-1.5rem),760px)]"
         >
           <m.div
             className="relative size-full"
@@ -112,7 +112,7 @@ export function Hero() {
           </m.div>
         </m.div>
 
-        <m.div style={{ y: textY, opacity: textOpacity }} className="relative z-10 order-2 min-w-0 pb-12 lg:order-1 lg:col-span-5 lg:py-16">
+        <m.div style={{ y: textY, opacity: textOpacity }} className="relative z-10 order-2 min-w-0 pb-14 lg:order-1 lg:col-span-5 lg:pb-0">
           {/* 1 · Identity */}
           <m.div {...enter(0)}>
             <p className="flex items-center gap-3 text-[clamp(1.125rem,0.95rem+0.7vw,1.5rem)] font-medium tracking-[-0.02em] text-ink">
@@ -135,21 +135,16 @@ export function Hero() {
             play={ready}
             delay={0.12}
             stagger={0.08}
-            className="mt-8 text-[clamp(2.9rem,1.2rem+5vw,4.4rem)] leading-[0.94] font-medium tracking-[-0.052em] outline-none lg:text-[min(5.15vw,4.6rem)] [&_.serif-em]:text-accent [&_.serif-em]:pr-[0.08em]"
+            className="mt-7 text-[clamp(2.6rem,1.2rem+4.4vw,4rem)] leading-[0.95] font-medium tracking-[-0.05em] outline-none lg:text-[min(4.6vw,4.25rem)] [&_.serif-em]:text-accent [&_.serif-em]:pr-[0.08em]"
           />
-          <m.p {...enter(0.55)} className="serif-em mt-3 text-[clamp(1.25rem,1rem+0.8vw,1.75rem)] text-muted">
-            (Even on Fridays. Mostly.)
-          </m.p>
-
           {/* 3 · Supporting context */}
-          <m.p {...enter(0.4, false)} className="text-lead mt-6 max-w-[33rem] text-muted">
-            Platforms for higher education at Ardhika — a multi-tenant LMS, an accreditation ERP and a support desk —
-            built on <Key tone="systems">Elixir and Phoenix</Key>, with <Key tone="interface">Vue and React</Key> in
-            front and <Key tone="data">PostgreSQL</Key> underneath.
+          <m.p {...enter(0.4, false)} className="text-lead mt-6 text-muted">
+            <Key tone="systems">Elixir</Key> · <Key tone="systems">Phoenix</Key> · <Key tone="interface">Vue</Key> ·{' '}
+            <Key tone="data">PostgreSQL</Key>
           </m.p>
 
           {/* 4 · Action */}
-          <m.div {...enter(0.6)} className="mt-9 flex flex-wrap items-center gap-3">
+          <m.div {...enter(0.6)} className="mt-8 flex flex-wrap items-center gap-3">
             <Button
               href="#work"
               icon="arrow-down"

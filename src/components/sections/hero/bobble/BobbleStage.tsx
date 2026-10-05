@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react';
-import headUrl from '../../../../assets/head.webp';
+import personUrl from '../../../../assets/person.webp';
 import { profile } from '../../../../content/profile';
 import { useInViewport } from '../../../../hooks/useInViewport';
 import { useFinePointer, useReducedMotion } from '../../../../hooks/useMediaQuery';
@@ -72,7 +72,7 @@ export default function BobbleStage({ ready, onLive }: { ready: boolean; onLive?
       return;
     }
     sceneRef.current = scene;
-    scene.prepare(headUrl).catch(() => setFailed(true));
+    scene.prepare(personUrl).catch(() => setFailed(true));
     const ro = new ResizeObserver(([entry]) => {
       const { width, height } = entry.contentRect;
       scene.setSize(width, height, Math.min(window.devicePixelRatio || 1, width < 600 ? 1.5 : 1.75));
@@ -152,7 +152,7 @@ export default function BobbleStage({ ready, onLive }: { ready: boolean; onLive?
           <canvas
             ref={canvasRef}
             role="img"
-            aria-label={`A 3D bobblehead of ${profile.name} typing at a laptop, with comedy moments: squashing a bug, a Friday deploy, too much coffee and rubber-duck debugging.`}
+            aria-label={`${profile.name} at a desk in a 3D scene, typing at a laptop, with comedy moments: squashing a bug, a Friday deploy, too much coffee and rubber-duck debugging.`}
             className={cn(
               'absolute inset-0 size-full touch-pan-y transition-opacity duration-700',
               live ? 'opacity-100' : 'opacity-0',
@@ -201,7 +201,7 @@ export default function BobbleStage({ ready, onLive }: { ready: boolean; onLive?
       </div>
 
       {/* Gag controls — keyboard and touch access to every joke. */}
-      <div className="relative z-10 mt-2 flex flex-wrap items-center justify-center gap-2" role="group" aria-label="Comedy moments">
+      <div className="relative z-10 mt-2 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2" role="group" aria-label="Comedy moments">
         {GAGS.map((g) => (
           <button
             key={g.id}
@@ -209,7 +209,7 @@ export default function BobbleStage({ ready, onLive }: { ready: boolean; onLive?
             onClick={() => trigger(g.id)}
             aria-pressed={active === g.id}
             className={cn(
-              'text-label inline-flex h-10 items-center gap-2 rounded-full border px-3.5 backdrop-blur-md transition-[background-color,border-color,color,translate] duration-300 hover:-translate-y-0.5',
+              'text-label inline-flex h-9 items-center gap-1.5 rounded-full border px-2.5 text-[0.75rem] backdrop-blur-md transition-[background-color,border-color,color,translate] duration-300 hover:-translate-y-0.5 sm:h-10 sm:gap-2 sm:px-3.5 sm:text-[0.8125rem]',
               active === g.id ? 'border-accent bg-accent-soft text-ink' : 'border-line-strong bg-bg/50 text-muted hover:border-ink/40 hover:text-ink',
             )}
           >

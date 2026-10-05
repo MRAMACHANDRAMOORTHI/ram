@@ -2,7 +2,7 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
 
-/** Preload what the first paint needs: three latin font files (no reflow under the loader) and the hero's face. */
+/** Preload what the first paint needs: three latin font files (no reflow under the loader) and the hero portrait. */
 function preloadCriticalFonts(): Plugin {
   let base = '/';
   const critical = [/geist-latin-wght-normal-.*\.woff2$/, /geist-mono-latin-wght-normal-.*\.woff2$/, /instrument-serif-latin-400-italic-.*\.woff2$/];
@@ -18,8 +18,8 @@ function preloadCriticalFonts(): Plugin {
         if (!ctx.bundle) return html;
         const files = Object.keys(ctx.bundle);
         const fonts = files.filter((f) => critical.some((re) => re.test(f)));
-        // The bobblehead's face texture: fetch it alongside the fonts.
-        const portrait = files.filter((f) => /head-.*\.webp$/.test(f));
+        // The hero's portrait cutout: fetch it alongside the fonts.
+        const portrait = files.filter((f) => /person-.*\.webp$/.test(f));
         return {
           html,
           tags: [

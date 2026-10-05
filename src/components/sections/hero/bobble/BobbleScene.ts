@@ -15,19 +15,19 @@ import {
   DirectionalLight,
   Group,
   HemisphereLight,
-  LatheGeometry,
   Mesh,
   MeshBasicMaterial,
+  MeshDepthMaterial,
   MeshStandardMaterial,
   Object3D,
   PCFSoftShadowMap,
+  PlaneGeometry,
+  RGBADepthPacking,
   PerspectiveCamera,
   PMREMGenerator,
   Quaternion,
   Raycaster,
   Scene,
-  Shape,
-  ShapeGeometry,
   SphereGeometry,
   Sprite,
   SpriteMaterial,
@@ -60,17 +60,22 @@ type Hit = 'head' | 'body' | 'mug' | 'button' | 'duck' | 'laptop' | 'bug' | null
 
 const UP = new Vector3(0, 1, 0);
 const DESK_Y = 0.75;
-const HEAD_ANCHOR = new Vector3(0, 1.97, 0.14);
-const HEAD_H = 1.62;
-const HEAD_W = HEAD_H * (440 / 562);
-const LOOK = new Vector3(0, 2.02, 0.4);
+/**
+ * The person is the real portrait cutout (head, shoulders, suit) on a plane at true
+ * proportions: ~1.5 units across the shoulders, shoulders ~0.65 above the desk, the
+ * chest disappearing behind the laptop and desk like someone seated at it.
+ */
+const PERSON_SIZE = 2.0; // square source image, in scene units
+const PERSON_BASE = new Vector3(0, 1.08, 0.05); // bottom-centre of the photo (mid-chest)
+const HEAD_TOP = 0.91; // top of the hair, as a fraction of the photo height from the bottom
+const LOOK = new Vector3(0, 1.78, 0.5);
 
 const PALETTE = {
-  suit: '#1f2942',
+  suit: '#151b28',
   lapel: '#18203a',
   shirt: '#f2f3f5',
   tie: '#1a35a0',
-  skin: '#c48a64',
+  skin: '#c98a62',
   chair: '#1b1c20',
   deskTop: '#3a2a20',
   deskFront: '#2c2018',
@@ -228,21 +233,21 @@ export class BobbleScene {
 
   // Rig
   private body = new Group();
-  private torso!: Mesh;
-  private head!: Sprite;
-  private headMat!: SpriteMaterial;
+  private person!: Mesh;
+  private personMat!: MeshBasicMaterial;
+  private personDepth!: MeshDepthMaterial;
   private armL: Mesh[] = [];
   private armR: Mesh[] = [];
   private handL!: Mesh;
   private handR!: Mesh;
-  private shoulderL = new Vector3(-0.66, 1.62, 0.02);
-  private shoulderR = new Vector3(0.66, 1.62, 0.02);
+  private shoulderL = new Vector3(-0.42, DESK_Y + 0.14, 0.42);
+  private shoulderR = new Vector3(0.42, DESK_Y + 0.14, 0.42);
   private handTargetL = new Vector3();
   private handTargetR = new Vector3();
-  private handPosL = new Vector3(-0.3, 0.86, 0.66);
-  private handPosR = new Vector3(0.3, 0.86, 0.66);
-  private restL = new Vector3(-0.3, 0.86, 0.66);
-  private restR = new Vector3(0.3, 0.86, 0.66);
+  private handPosL = new Vector3(-0.3, DESK_Y + 0.1, 0.7);
+  private handPosR = new Vector3(0.3, DESK_Y + 0.1, 0.7);
+  private restL = new Vector3(-0.3, DESK_Y + 0.1, 0.7);
+  private restR = new Vector3(0.3, DESK_Y + 0.1, 0.7);
   private handROverride: Vector3 | null = null;
   private handLOverride: Vector3 | null = null;
   private handSpeed = 10;
@@ -252,6 +257,7 @@ export class BobbleScene {
   private bobY = new Spring(0, 80, 7);
   private bobRot = new Spring(0, 55, 5.5);
   private bobScale = new Spring(1, 120, 9);
+  private nod = new Spring(0, 90, 9);
   private lean = 0;
   private pointerX = 0;
   private pointerY = 0;
@@ -304,7 +310,7 @@ export class BobbleScene {
     pmrem.dispose();
     this.scene.environment = this.envMap;
     this.scene.environmentIntensity = 0.55;
-    this.camera.position.set(0, 2.45, 8.4);
+    this.camera.position.set(0, 2.3, 7.2);
     this.camera.lookAt(LOOK);
 
     this.buildLights();
@@ -330,9 +336,11 @@ export class BobbleScene {
     }
     tex.colorSpace = SRGBColorSpace;
     tex.anisotropy = 4;
-    this.headMat.map = tex;
-    this.headMat.needsUpdate = true;
-    this.headMat.opacity = 1;
+    this.personMat.map = tex;
+    this.personMat.needsUpdate = true;
+    this.personMat.opacity = 1;
+    this.personDepth.map = tex;
+    this.personDepth.needsUpdate = true;
     // Make every prop visible once so all shader variants compile up front.
     const hidden: Object3D[] = [];
     this.scene.traverse((o) => {
@@ -549,81 +557,33 @@ export class BobbleScene {
   }
 
   private buildBody() {
-    const suit = this.pbr(PALETTE.suit);
-    // Torso
-    // Lathe profile: waist, chest, shoulders, then the collar line.
-    const profile = [
-      [0.5, 0.36],
-      [0.56, 0.7],
-      [0.6, 1.05],
-      [0.64, 1.36],
-      [0.69, 1.56],
-      [0.66, 1.68],
-      [0.5, 1.8],
-      [0.3, 1.86],
-      [0.0, 1.88],
-    ].map(([x, y]) => new Vector2(x, y));
-    this.torso = new Mesh(new LatheGeometry(profile, 40), suit);
-    this.torso.scale.set(1, 1, 0.62);
-    this.body.add(this.torso);
+    // The real person: the portrait cutout on a plane, pivoting at the chest so leans look natural.
+    this.personMat = new MeshBasicMaterial({ transparent: true, opacity: 0, alphaTest: 0.02, toneMapped: false });
+    this.person = new Mesh(new PlaneGeometry(PERSON_SIZE, PERSON_SIZE), this.personMat);
+    this.person.geometry.translate(0, PERSON_SIZE / 2, 0);
+    this.person.position.copy(PERSON_BASE);
+    // Shape-accurate shadow on the chair and desk from the photo's own silhouette.
+    this.personDepth = new MeshDepthMaterial({ depthPacking: RGBADepthPacking, alphaTest: 0.5 });
+    this.person.customDepthMaterial = this.personDepth;
+    this.person.castShadow = true;
+    this.person.renderOrder = 5;
+    this.body.add(this.person);
+    const lowerTorso = new Mesh(
+      new BoxGeometry(1.66, PERSON_BASE.y - (DESK_Y - 0.2) + 0.06, 0.5),
+      new MeshBasicMaterial({ color: '#12161f', toneMapped: false }),
+    );
+    lowerTorso.position.set(0.06, (PERSON_BASE.y + 0.06 + DESK_Y - 0.2) / 2, PERSON_BASE.z - 0.27);
+    this.body.add(lowerTorso);
 
-    // Shirt collar around the neck.
-    const collarRing = new Mesh(new TorusGeometry(0.17, 0.035, 10, 28), this.pbr(PALETTE.shirt));
-    collarRing.rotation.x = Math.PI / 2 - 0.3;
-    collarRing.scale.set(1.05, 0.8, 1);
-    collarRing.position.set(0, 1.845, 0.12);
-    this.body.add(collarRing);
-
-    // Shirt V, lapels and tie — tilted to sit on the chest's slope.
-    const chest = new Group();
-    chest.position.set(0, 1.56, 0.455);
-    chest.rotation.x = -0.26;
-    const v = new Shape();
-    v.moveTo(-0.3, 0.22);
-    v.lineTo(0.3, 0.22);
-    v.lineTo(0, -0.3);
-    v.closePath();
-    const shirt = new Mesh(new ShapeGeometry(v), this.pbr(PALETTE.shirt));
-    const lapelShape = (dir: number) => {
-      const s = new Shape();
-      s.moveTo(dir * 0.3, 0.22);
-      s.lineTo(dir * 0.5, 0.12);
-      s.lineTo(dir * 0.08, -0.36);
-      s.lineTo(0, -0.3);
-      s.closePath();
-      return s;
-    };
-    // Shirt collar points either side of the neck.
-    const collar = [-1, 1].map((d) => {
-      const s = new Shape();
-      s.moveTo(d * 0.02, 0.24);
-      s.lineTo(d * 0.24, 0.26);
-      s.lineTo(d * 0.1, 0.06);
-      s.closePath();
-      const mesh = new Mesh(new ShapeGeometry(s), this.pbr(PALETTE.shirt));
-      mesh.position.z = 0.012;
-      return mesh;
-    });
-    const lapels = [-1, 1].map((d) => new Mesh(new ShapeGeometry(lapelShape(d)), this.pbr(PALETTE.lapel)));
-    lapels.forEach((l) => (l.position.z = 0.004));
-    const t = new Shape();
-    t.moveTo(-0.05, 0.16);
-    t.lineTo(0.05, 0.16);
-    t.lineTo(0.07, -0.18);
-    t.lineTo(0, -0.28);
-    t.lineTo(-0.07, -0.18);
-    t.closePath();
-    const tie = new Mesh(new ShapeGeometry(t), this.pbr(PALETTE.tie));
-    tie.position.z = 0.008;
-    chest.add(shirt, ...lapels, tie, ...collar);
-    this.body.add(chest);
-
-    // Arms (upper + fore) and hands
-    const armGeo = new CapsuleGeometry(0.12, 1, 4, 10);
+    // Forearms in the suit's fabric, hands in the photo's skin tone. Hidden while typing.
+    const sleeve = this.pbr(PALETTE.suit, { roughness: 0.85 });
+    const armGeo = new CapsuleGeometry(0.075, 1, 4, 12);
     for (const side of [-1, 1]) {
-      const upper = new Mesh(armGeo, suit);
-      const fore = new Mesh(armGeo, suit);
-      const hand = new Mesh(new SphereGeometry(0.12, 14, 12), this.pbr(PALETTE.skin));
+      const upper = new Mesh(armGeo, sleeve);
+      const fore = new Mesh(armGeo, sleeve);
+      upper.visible = false;
+      const hand = new Mesh(new SphereGeometry(0.075, 16, 12), this.pbr(PALETTE.skin, { roughness: 0.6 }));
+      hand.scale.set(1, 0.8, 1.25);
       this.body.add(upper, fore, hand);
       if (side < 0) {
         this.armL = [upper, fore];
@@ -634,15 +594,8 @@ export class BobbleScene {
       }
     }
 
-    // Head: a camera-facing sprite of the real face.
-    this.headMat = new SpriteMaterial({ transparent: true, depthWrite: false, opacity: 0, toneMapped: false });
-    this.head = new Sprite(this.headMat);
-    this.head.scale.set(HEAD_W, HEAD_H, 1);
-    this.head.renderOrder = 10;
-    this.body.add(this.head);
-
     this.scene.add(this.body);
-    this.hittables.push([this.head, 'head'], [this.torso, 'body']);
+    this.hittables.push([this.person, 'head']);
   }
 
   private buildProps() {
@@ -823,9 +776,8 @@ export class BobbleScene {
   }
 
   private boop() {
-    this.bobScale.kick(-3.2);
-    this.bobY.kick(-2.2);
-    this.bobRot.kick(rand(-3, 3));
+    this.nod.kick(1.6);
+    this.bobRot.kick(rand(-0.6, 0.6));
     if (!this.director.busy) {
       this.say(BOOPS[Math.floor(Math.random() * BOOPS.length)]);
       window.clearTimeout(this.boopTimer);
@@ -871,7 +823,7 @@ export class BobbleScene {
         [2.3, () => {
           this.typing = 0;
           this.handSpeed = 9;
-          this.handROverride = new Vector3(-0.55, 2.15, 0.95);
+          this.handROverride = new Vector3(-0.72, DESK_Y + 0.6, 0.98);
         }],
         [2.75, () => {
           this.handSpeed = 40;
@@ -881,8 +833,7 @@ export class BobbleScene {
           squashed = true;
           this.bug.scale.set(1.6, 0.18, 1.5);
           this.shake = 0.35;
-          this.bobY.kick(-4);
-          this.bobScale.kick(-2.5);
+          this.nod.kick(1.2);
           this.fx('SPLAT!', stop.clone().setY(DESK_Y + 0.5), 'lime');
         }],
         [3.4, () => {
@@ -1017,7 +968,7 @@ export class BobbleScene {
                 this.typing = 1 + (i + 1) * 0.9;
                 this.vibrate = (i + 1) * 0.28;
                 this.say(lines[i]);
-                this.bobY.kick(1.5 + i);
+                this.nod.kick(-0.5 - i * 0.2);
               },
             ] as [number, () => void],
         ),
@@ -1066,7 +1017,7 @@ export class BobbleScene {
         [3.6, () => {
           this.cb.onBubble('duck', null);
           this.say('…oh. It’s a nil check.');
-          this.bobScale.kick(2.6);
+          this.nod.kick(-1.2);
         }],
         [5.0, () => {
           this.say(null);
@@ -1116,17 +1067,14 @@ export class BobbleScene {
     mesh.position.addVectors(a, b).multiplyScalar(0.5);
     this.q.setFromUnitVectors(UP, this.tmp.normalize());
     mesh.quaternion.copy(this.q);
-    mesh.scale.set(1, Math.max(0.05, len - 0.2), 1);
+    mesh.scale.set(1, Math.max(0.05, len - 0.12), 1);
   }
 
-  private poseArm(shoulder: Vector3, hand: Vector3, side: number, segs: Mesh[]) {
-    const elbow = this.tmp2.addVectors(shoulder, hand).multiplyScalar(0.5);
-    elbow.x += side * 0.26;
-    elbow.y -= 0.12;
-    elbow.z -= 0.08;
-    const e = elbow.clone();
-    this.placeLimb(segs[0], shoulder, e);
-    this.placeLimb(segs[1], e, hand);
+  private poseArm(anchor: Vector3, hand: Vector3, segs: Mesh[], handMesh: Mesh, reaching: boolean) {
+    // Hands are on the keyboard behind the lid; an arm only shows when it reaches out.
+    segs[1].visible = reaching;
+    handMesh.visible = reaching;
+    if (reaching) this.placeLimb(segs[1], anchor, hand);
   }
 
   private update(dt: number) {
@@ -1145,35 +1093,33 @@ export class BobbleScene {
     this.handPosR.lerp(tr, dt ? k : 1);
     this.handL.position.copy(this.handPosL);
     this.handR.position.copy(this.handPosR);
-    this.poseArm(this.shoulderL, this.handPosL, -1, this.armL);
-    this.poseArm(this.shoulderR, this.handPosR, 1, this.armR);
+    const reachL = this.handLOverride !== null || this.handPosL.distanceTo(this.restL) > 0.08;
+    const reachR = this.handROverride !== null || this.handPosR.distanceTo(this.restR) > 0.08;
+    this.poseArm(this.shoulderL, this.handPosL, this.armL, this.handL, reachL);
+    this.poseArm(this.shoulderR, this.handPosR, this.armR, this.handR, reachR);
 
-    // Body: breathing, coffee jitter, panic.
-    const jitter = this.vibrate * 0.035;
-    this.body.position.set(Math.sin(t * 61) * jitter, Math.sin(t * 2) * 0.012 + Math.sin(t * 47) * jitter * 0.6, 0);
-    this.body.rotation.y = this.pointerX * 0.08 + this.lean * 0.1;
-
-    // Bobble: lean toward the cursor (or the gag), bob with typing, springs do the rest.
-    this.bobX.target = this.pointerX * 0.1 + this.lean * 0.14;
-    this.bobRot.target = -this.pointerX * 0.12 - this.lean * 0.18;
-    this.bobY.target = this.typing > 0 ? Math.abs(Math.sin(t * speed * 0.5)) * 0.03 * Math.min(2, this.typing) : 0;
-    if (this.vibrate > 0) this.bobRot.kick(Math.sin(t * 50) * this.vibrate * 0.6);
+    // Body: breathing, a slight lean toward the cursor, coffee jitter, a nod when booped.
+    const jitter = this.vibrate * 0.018;
+    this.bobX.target = this.pointerX * 0.035 + this.lean * 0.05;
+    this.bobRot.target = -this.pointerX * 0.025 - this.lean * 0.05;
+    if (this.vibrate > 0) this.bobRot.kick(Math.sin(t * 50) * this.vibrate * 0.15);
     for (let left = dt; left > 0; left -= 1 / 60) {
       const step = Math.min(left, 1 / 60);
       this.bobX.step(step);
       this.bobY.step(step);
       this.bobRot.step(step);
       this.bobScale.step(step);
+      this.nod.step(step);
     }
-
-    const sc = this.bobScale.x;
-    this.head.scale.set(HEAD_W * (2 - sc), HEAD_H * sc, 1);
-    this.head.position.set(
-      HEAD_ANCHOR.x + this.bobX.x,
-      HEAD_ANCHOR.y + (HEAD_H * sc) / 2 - 0.16 + this.bobY.x,
-      HEAD_ANCHOR.z + 0.05,
+    const breathe = Math.sin(t * 1.6) * 0.006;
+    this.person.position.set(
+      PERSON_BASE.x + this.bobX.x + Math.sin(t * 61) * jitter,
+      PERSON_BASE.y + this.bobY.x * 0.25 + Math.sin(t * 47) * jitter * 0.5,
+      PERSON_BASE.z,
     );
-    this.headMat.rotation = this.bobRot.x;
+    this.person.rotation.z = this.bobRot.x;
+    this.person.rotation.x = -this.nod.x;
+    this.person.scale.set(1 - breathe * 0.4, 1 + breathe + (this.bobScale.x - 1) * 0.08, 1);
 
     // Steam
     this.steam.forEach((s, i) => {
@@ -1226,8 +1172,8 @@ export class BobbleScene {
     const sh = this.shake * 0.25;
     this.camera.position.set(
       this.camX + rand(-sh, sh) + (1 - io) * 1.2,
-      2.45 + this.camY + rand(-sh, sh) + (1 - io) * 0.9,
-      8.4 + (1 - io) * 3.4,
+      2.3 + this.camY + rand(-sh, sh) + (1 - io) * 0.9,
+      7.2 + (1 - io) * 3.4,
     );
     this.camera.lookAt(LOOK);
 
@@ -1240,7 +1186,7 @@ export class BobbleScene {
   }
 
   private emitAnchors() {
-    const me = this.tmp2.copy(this.head.position).add(new Vector3(HEAD_W * 0.32, HEAD_H * 0.42, 0));
+    const me = this.tmp2.copy(this.person.position).add(new Vector3(0.26, PERSON_SIZE * HEAD_TOP - 0.05, 0));
     const meA = this.project(me, true);
     const duckA = this.project(this.duck.position.clone().add(new Vector3(0, 0.7, 0)), this.duck.visible);
     const fxA = this.project(this.fxPos, this.fxVisible);
@@ -1250,7 +1196,7 @@ export class BobbleScene {
   private render() {
     if (!this.prepared || this.disposed) return;
     this.renderer.render(this.scene, this.camera);
-    if (!this.drewFirst && this.headMat.map) {
+    if (!this.drewFirst && this.personMat.map) {
       this.drewFirst = true;
       this.cb.onFirstFrame();
     }

@@ -19,10 +19,10 @@ export interface GagInfo {
 }
 
 export const GAGS: GagInfo[] = [
-  { id: 'bug', label: 'Squash a bug', emoji: '🐛', punchline: '1 bug fixed. 3 new bugs.' },
-  { id: 'deploy', label: 'Deploy on Friday', emoji: '🔥', punchline: 'This is fine. Rolled back. Calmly.' },
-  { id: 'coffee', label: 'More coffee', emoji: '☕', punchline: 'Coffee #4. I can hear the database.' },
-  { id: 'duck', label: 'Ask the duck', emoji: '🦆', punchline: 'Quack. (It was a nil check.)' },
+  { id: 'bug', label: 'Bug', emoji: '🐛', punchline: '1 bug fixed. 3 new bugs.' },
+  { id: 'deploy', label: 'Deploy', emoji: '🔥', punchline: 'This is fine. Rolled back. Calmly.' },
+  { id: 'coffee', label: 'Coffee', emoji: '☕', punchline: 'Coffee #4. I can hear the database.' },
+  { id: 'duck', label: 'Duck', emoji: '🦆', punchline: 'Quack. (It was a nil check.)' },
 ];
 
 export const BOOPS = [

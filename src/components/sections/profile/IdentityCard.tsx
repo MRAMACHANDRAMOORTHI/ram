@@ -74,7 +74,8 @@ export function IdentityCard() {
     'absolute inset-[1.5px] flex flex-col overflow-hidden rounded-[calc(1.75rem-1.5px)] bg-paper p-4 text-paper-ink [backface-visibility:hidden] sm:p-5';
 
   return (
-    <div className="mx-auto w-full max-w-[25rem]">
+    // Width follows the viewport height so the whole card (and its flip button) is always in view.
+    <div className="mx-auto w-full max-w-[min(25rem,calc((100svh-var(--nav-h)-var(--dock-space)-9rem)/1.44))] min-w-[16rem]">
       <div className="[perspective:1400px]">
         <m.div
           ref={ref}
@@ -206,7 +207,7 @@ export function IdentityCard() {
         type="button"
         onClick={() => setFlipped((f) => !f)}
         aria-pressed={flipped}
-        className="text-label mx-auto mt-8 flex h-10 items-center gap-2 rounded-full border border-line px-4 text-muted transition-colors duration-300 hover:border-human/50 hover:text-ink"
+        className="text-label mx-auto mt-6 flex h-10 items-center gap-2 rounded-full border border-line px-4 text-muted transition-colors duration-300 hover:border-human/50 hover:text-ink"
       >
         <Icon name="flip" size={15} />
         {flipped ? 'Show profile' : 'How I work'}

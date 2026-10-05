@@ -12,9 +12,11 @@ export const profile = {
   phone: { label: '+91 80723 65616', href: 'tel:+918072365616' },
   resume: `${import.meta.env.BASE_URL}Ramachandramoorthi_.pdf`,
   core: ['Elixir', 'Phoenix', 'Vue 3', 'PostgreSQL'],
-  /** *asterisks* mark the serif accent words. */
-  statement:
-    'I like the part of a product most people never see — the workflow rules, the timers and the queries that keep a dashboard *honest.* Today I build in Elixir and Phoenix with Vue 3 and PostgreSQL. Before that: React and Firebase for a classical-Tamil learning platform at CICT, and Spring Boot APIs on MySQL at RETECH. The constant is the same — software that *keeps working* when the volume shows up.',
+  /** The profile statement, as a pull-quote lead and its body. *asterisks* mark the accent words. */
+  statement: {
+    lead: 'I like the part of a product most people never see — the workflow rules, the timers and the queries that keep a dashboard *honest.*',
+    body: 'Today I build in Elixir and Phoenix with Vue 3 and PostgreSQL. Before that: React and Firebase for a classical-Tamil learning platform at CICT, and Spring Boot APIs on MySQL at RETECH. The constant is the same — software that *keeps working* when the volume shows up.',
+  },
 } as const;
 
 export interface Channel {

@@ -85,4 +85,4 @@ domain is known.
 - Lab run on the production build: desktop LCP ≈ 0.4 s, TBT < 70 ms; mobile (4× CPU, slow 4G) LCP ≈ 2.6 s
   and TBT ≈ 0.75 s — most of that is the lazy-loaded 3D engine; CLS 0 everywhere; scrolling at about 60 fps.
 - Keyboard: skip link, visible focus, focus trapping and restoring in dialogs, ⌘/Ctrl K palette.
-- Both themes are designed separately ("studio graphite" dark, "gallery white" light) and meet WCAG AA contrast for text.
+- Both themes are designed separately ("midnight" navy dark, "ivory" light) with one champagne-gold accent and meet WCAG AA contrast for text.

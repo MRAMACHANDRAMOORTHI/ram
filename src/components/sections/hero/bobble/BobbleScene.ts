@@ -83,7 +83,7 @@ const PALETTE = {
   laptop: '#c3c7cd',
   keys: '#1d1f23',
   mug: '#f4f4f2',
-  mugBand: '#3b5bdb',
+  mugBand: '#c9974a',
   coffee: '#3b2416',
   duck: '#ffd23a',
   beak: '#ff8a1f',
@@ -203,7 +203,7 @@ function lidTexture() {
   sticker(46, 44, 150, 66, '#1d1f24', '#eef0f3', 'Elixir', 33, -0.1, 30);
   sticker(306, 34, 160, 60, '#f4f4f2', '#121418', 'MSR', 30, 0.06, 30);
   sticker(64, 196, 228, 60, '#e6b065', '#2a1a00', 'works on my machine', 12, 0.04, 21);
-  sticker(336, 156, 112, 112, '#3b5bdb', '#ffffff', '</>', 56, -0.08, 44);
+  sticker(336, 156, 112, 112, '#0f1a33', '#e3b66d', '</>', 56, -0.08, 44);
   const t = new CanvasTexture(c);
   t.colorSpace = SRGBColorSpace;
   t.anisotropy = 4;

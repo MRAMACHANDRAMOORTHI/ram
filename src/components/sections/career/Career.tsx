@@ -97,7 +97,7 @@ function StickyPanel({
             animate={{ y: '0%', opacity: 1 }}
             exit={{ y: reduced ? 0 : '-100%', opacity: reduced ? 0 : 1 }}
             transition={{ duration: 0.8, ease: EASE_OUT_EXPO }}
-            className="absolute inset-0 text-[clamp(3.25rem,2.2rem+3vw,5.25rem)] leading-none font-medium tracking-[-0.05em] whitespace-nowrap"
+            className="absolute inset-0 font-serif text-[clamp(3.5rem,2.4rem+3.2vw,5.75rem)] leading-none font-normal tracking-[-0.015em] whitespace-nowrap"
           >
             {role.companyShort}
             <span className="text-tone">.</span>

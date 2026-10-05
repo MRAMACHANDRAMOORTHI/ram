@@ -120,7 +120,7 @@ function ProjectRow({ project, index, dimmed, onHover, onLeave, onOpen }: RowPro
       </span>
 
       <span className="mt-3 block lg:col-span-6 lg:mt-0">
-        <span className="block text-[clamp(2rem,1.2rem+3.2vw,4.25rem)] leading-[0.95] font-medium tracking-[-0.045em] transition-transform duration-700 ease-out-expo lg:group-hover:translate-x-4 lg:group-focus-visible:translate-x-4">
+        <span className="block font-serif text-[clamp(2.3rem,1.3rem+3.6vw,4.75rem)] leading-[0.98] font-normal tracking-[-0.015em] transition-transform duration-700 ease-out-expo lg:group-hover:translate-x-4 lg:group-focus-visible:translate-x-4">
           {keepHyphens(project.title)}
         </span>
         <span className="mt-4 block max-w-xl text-[0.9375rem] leading-relaxed text-muted">{project.tagline}</span>

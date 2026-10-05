@@ -8,7 +8,7 @@ const FILES: Array<[string, string, 'done' | 'running' | 'queued', number]> = [
   ['Unit 2 / 01 Lecture.mp4', 'Video lesson', 'running', 64],
   ['Unit 2 / 02 Notes.docx', 'Document', 'queued', 0],
 ];
-const ROSE = '#2b52d0';
+const ROSE = '#1f3463';
 
 /** Illustration of the ekVana admin portal's Google Drive import, built from the project's docs. */
 export function LmsVisual() {

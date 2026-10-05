@@ -28,7 +28,7 @@ export function SectionHeader({ index, label, title, intro, id }: SectionHeaderP
           />
           <span>{label}</span>
         </div>
-        <SplitReveal as="h2" id={id} text={title} className="text-title mt-6 text-balance outline-none [&_.serif-em]:text-tone" />
+        <SplitReveal as="h2" id={id} text={title} className="text-title mt-6 text-balance outline-none [&_.serif-em]:text-accent" />
       </div>
       {intro && (
         <Reveal className="text-lead text-muted lg:col-span-4 lg:pb-2" delay={0.15}>

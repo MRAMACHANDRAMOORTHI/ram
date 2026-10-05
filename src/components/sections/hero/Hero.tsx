@@ -1,14 +1,12 @@
 import { m, useScroll, useTransform } from 'framer-motion';
-import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import personUrl from '../../../assets/person.webp';
 import { profile } from '../../../content/profile';
-import type { Tone } from '../../../content/types';
 import { useBootReady } from '../../../hooks/useBootReady';
 import { useReducedMotion } from '../../../hooks/useMediaQuery';
 import { markBoot } from '../../../lib/boot';
 import { EASE_OUT_EXPO } from '../../../lib/motion';
 import { scrollToSection } from '../../../lib/scroll';
-import { toneText } from '../../../lib/tones';
 import { cn } from '../../../lib/utils';
 import { Button } from '../../primitives/Button';
 import { ErrorBoundary } from '../../primitives/ErrorBoundary';
@@ -16,11 +14,6 @@ import { SplitReveal } from '../../primitives/SplitReveal';
 import { HeadPoster } from './bobble/HeadPoster';
 
 const BobbleStage = lazy(() => import('./bobble/BobbleStage'));
-
-/** A keyword in its domain tone — the same colours the rest of the site uses. */
-function Key({ tone, children }: { tone: Tone; children: ReactNode }) {
-  return <span className={cn('font-medium', toneText[tone])}>{children}</span>;
-}
 
 
 export function Hero() {
@@ -131,16 +124,16 @@ export function Hero() {
           <SplitReveal
             as="h1"
             id="hero-title"
-            text={'I build systems\nthat keep *running.*'}
+            text={'I build the platforms\ncolleges *run on.*'}
             play={ready}
             delay={0.12}
             stagger={0.08}
-            className="mt-7 text-[clamp(2.6rem,1.2rem+4.4vw,4rem)] leading-[0.95] font-medium tracking-[-0.05em] outline-none lg:text-[min(4.6vw,4.25rem)] [&_.serif-em]:text-accent [&_.serif-em]:pr-[0.08em]"
+            className="mt-7 font-serif text-[clamp(3rem,1.4rem+5vw,4.6rem)] leading-[0.98] font-normal tracking-[-0.015em] outline-none lg:text-[min(5.2vw,4.9rem)] [&_.serif-em]:pr-[0.06em] [&_.serif-em]:text-accent"
           />
           {/* 3 · Supporting context */}
-          <m.p {...enter(0.4, false)} className="text-lead mt-6 text-muted">
-            <Key tone="systems">Elixir</Key> · <Key tone="systems">Phoenix</Key> · <Key tone="interface">Vue</Key> ·{' '}
-            <Key tone="data">PostgreSQL</Key>
+          <m.p {...enter(0.4, false)} className="text-lead mt-6 max-w-[30rem] text-pretty text-muted">
+            Helpdesk, learning and accreditation software for Indian higher education — built in Elixir, Phoenix and
+            Vue.
           </m.p>
 
           {/* 4 · Action */}
@@ -161,6 +154,14 @@ export function Hero() {
               Résumé
             </Button>
           </m.div>
+
+          <m.p {...enter(0.8)} className="text-label mt-8 flex flex-wrap items-center gap-x-2 gap-y-1 text-faint">
+            <span>
+              Now at <span className="text-ink">Ardhika</span>
+            </span>
+            <span aria-hidden="true">·</span>
+            <span>Previously CICT and RETECH</span>
+          </m.p>
         </m.div>
       </div>
     </section>

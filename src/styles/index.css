@@ -13,76 +13,76 @@
 :root,
 :root[data-theme='dark'] {
   color-scheme: dark;
-  /* Studio graphite: neutral, cool, quiet — one blue accent, amber used sparingly. */
-  --bg: #0b0c0e;
-  --bg-raised: #101114;
-  --surface: #15171b;
-  --surface-2: #1c1f24;
-  --glass: rgb(16 17 20 / 0.66);
-  --line: rgb(255 255 255 / 0.08);
-  --line-strong: rgb(255 255 255 / 0.15);
-  --ink: #eef0f3;
-  --muted: #a2a7b0;
-  --faint: #858a94;
-  --accent: #6f8fff;
-  --accent-ink: #0b0c0e;
-  --accent-soft: rgb(111 143 255 / 0.12);
-  --signal: #5fd0a0;
-  --signal-soft: rgb(95 208 160 / 0.12);
-  --danger: #ff8a7a;
-  --glow-accent: rgb(111 143 255 / 0.22);
-  --glow-signal: rgb(95 208 160 / 0.14);
-  --elev-lg: 0 30px 80px -20px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.04);
-  --elev-md: 0 14px 40px -12px rgb(0 0 0 / 0.65);
-  --grain-opacity: 0.04;
-  --card-paper: #eceef2;
-  --card-paper-ink: #121418;
+  /* Midnight: deep navy, ivory type, one champagne-gold accent. Text stays neutral; colour is for accents. */
+  --bg: #0b1020;
+  --bg-raised: #0f1528;
+  --surface: #141b31;
+  --surface-2: #1b233c;
+  --glass: rgb(15 21 40 / 0.68);
+  --line: rgb(226 232 245 / 0.09);
+  --line-strong: rgb(226 232 245 / 0.17);
+  --ink: #f2efe8;
+  --muted: #a9b0c0;
+  --faint: #8c94a8;
+  --accent: #e3b66d;
+  --accent-ink: #1a1206;
+  --accent-soft: rgb(227 182 109 / 0.12);
+  --signal: #7cc9a6;
+  --signal-soft: rgb(124 201 166 / 0.12);
+  --danger: #ff8f80;
+  --glow-accent: rgb(227 182 109 / 0.2);
+  --glow-signal: rgb(124 201 166 / 0.14);
+  --elev-lg: 0 30px 80px -20px rgb(2 5 14 / 0.75), 0 0 0 1px rgb(226 232 245 / 0.05);
+  --elev-md: 0 14px 40px -12px rgb(2 5 14 / 0.7);
+  --grain-opacity: 0.035;
+  --card-paper: #f4f0e7;
+  --card-paper-ink: #101a2e;
 
-  /* Domain tones, held to two hue families (blue, amber) plus green for healthy state:
+  /* Domain tones stay inside one family — golds and a steel blue that belongs to the navy:
      systems (backend) · interface (frontend) · data · automation (jobs, workflows, AI)
-     · signal (responses, healthy state) · human (people, profile, career). */
-  --systems: #6f8fff;
-  --interface: #a9bbff;
-  --data: #9db0c6;
-  --automation: #e6b065;
-  --human: #efc48d;
+     · signal (healthy/live state only) · human (people, profile, career). */
+  --systems: #e3b66d;
+  --interface: #a3b8e2;
+  --data: #cfbd96;
+  --automation: #e8c27e;
+  --human: #ecd2a6;
   --tone: var(--systems);
-  --tone-glow-strength: 16%;
+  --tone-glow-strength: 14%;
 }
 
 :root[data-theme='light'] {
   color-scheme: light;
-  /* Gallery white: soft neutral paper, carbon ink, the same blue and amber, deepened. */
-  --bg: #f6f6f4;
-  --bg-raised: #fbfbfa;
+  /* Ivory: warm paper, navy ink, the same gold deepened for print-like contrast. */
+  --bg: #f6f3ec;
+  --bg-raised: #fbf9f4;
   --surface: #ffffff;
-  --surface-2: #ebebe8;
-  --glass: rgb(251 251 250 / 0.76);
-  --line: rgb(18 20 24 / 0.1);
-  --line-strong: rgb(18 20 24 / 0.18);
-  --ink: #121418;
-  --muted: #4f5560;
-  --faint: #626874;
-  --accent: #2b52d0;
+  --surface-2: #ece6da;
+  --glass: rgb(251 249 244 / 0.78);
+  --line: rgb(16 26 46 / 0.1);
+  --line-strong: rgb(16 26 46 / 0.18);
+  --ink: #101a2e;
+  --muted: #475165;
+  --faint: #5b6476;
+  --accent: #8a5a12;
   --accent-ink: #ffffff;
-  --accent-soft: rgb(43 82 208 / 0.08);
-  --signal: #0b7553;
-  --signal-soft: rgb(11 117 83 / 0.1);
+  --accent-soft: rgb(138 90 18 / 0.08);
+  --signal: #1d6e50;
+  --signal-soft: rgb(29 110 80 / 0.1);
   --danger: #b4232f;
-  --glow-accent: rgb(43 82 208 / 0.12);
-  --glow-signal: rgb(11 117 83 / 0.1);
-  --elev-lg: 0 30px 70px -28px rgb(20 24 40 / 0.28), 0 0 0 1px rgb(18 20 24 / 0.06);
-  --elev-md: 0 14px 34px -16px rgb(20 24 40 / 0.24);
-  --grain-opacity: 0.05;
+  --glow-accent: rgb(138 90 18 / 0.1);
+  --glow-signal: rgb(29 110 80 / 0.08);
+  --elev-lg: 0 30px 70px -28px rgb(16 26 46 / 0.28), 0 0 0 1px rgb(16 26 46 / 0.06);
+  --elev-md: 0 14px 34px -16px rgb(16 26 46 / 0.24);
+  --grain-opacity: 0.04;
   --card-paper: #ffffff;
-  --card-paper-ink: #121418;
+  --card-paper-ink: #101a2e;
 
-  --systems: #2b52d0;
-  --interface: #4a5ab0;
-  --data: #4a5b70;
-  --automation: #93560a;
-  --human: #8a5410;
-  --tone-glow-strength: 10%;
+  --systems: #8a5a12;
+  --interface: #2e4d8c;
+  --data: #6a5832;
+  --automation: #8a5a12;
+  --human: #7b5220;
+  --tone-glow-strength: 9%;
 }
 
 @theme inline {
@@ -135,17 +135,20 @@
 /* Typography scale                                                    */
 /* ------------------------------------------------------------------ */
 
+/* Display and section titles are set in the serif; everything that works for a living is sans. */
 @utility text-display {
-  font-size: clamp(2.6rem, 0.9rem + 4.9vw, 6.25rem);
-  line-height: 0.95;
-  letter-spacing: -0.045em;
-  font-weight: 520;
+  font-family: var(--font-serif);
+  font-size: clamp(2.9rem, 1rem + 5.4vw, 6.75rem);
+  line-height: 0.98;
+  letter-spacing: -0.015em;
+  font-weight: 400;
 }
 @utility text-title {
-  font-size: clamp(2.25rem, 1.35rem + 3.6vw, 4.75rem);
-  line-height: 0.98;
-  letter-spacing: -0.04em;
-  font-weight: 500;
+  font-family: var(--font-serif);
+  font-size: clamp(2.5rem, 1.5rem + 3.9vw, 5.25rem);
+  line-height: 1;
+  letter-spacing: -0.015em;
+  font-weight: 400;
 }
 @utility text-heading {
   font-size: clamp(1.5rem, 1.15rem + 1.3vw, 2.25rem);
@@ -169,17 +172,18 @@
   line-height: 1.65;
 }
 @utility text-meta {
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 600;
   line-height: 1.4;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 @utility text-label {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: 0.8125rem;
-  line-height: 1.4;
-  letter-spacing: 0.01em;
+  line-height: 1.45;
+  letter-spacing: 0;
 }
 @utility serif-em {
   font-family: var(--font-serif);
@@ -187,6 +191,12 @@
   font-weight: 400;
   letter-spacing: -0.01em;
   font-size: 1.06em;
+}
+/* Inside serif headings the italic is already the same family: keep it the same size. */
+.font-serif .serif-em,
+.text-title .serif-em,
+.text-display .serif-em {
+  font-size: 1em;
 }
 
 /* ------------------------------------------------------------------ */

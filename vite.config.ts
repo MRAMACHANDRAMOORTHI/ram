@@ -5,7 +5,12 @@ import { defineConfig, type Plugin } from 'vite';
 /** Preload what the first paint needs: three latin font files (no reflow under the loader) and the hero portrait. */
 function preloadCriticalFonts(): Plugin {
   let base = '/';
-  const critical = [/geist-latin-wght-normal-.*\.woff2$/, /geist-mono-latin-wght-normal-.*\.woff2$/, /instrument-serif-latin-400-italic-.*\.woff2$/];
+  const critical = [
+    /geist-latin-wght-normal-.*\.woff2$/,
+    /geist-mono-latin-wght-normal-.*\.woff2$/,
+    /instrument-serif-latin-400-normal-.*\.woff2$/,
+    /instrument-serif-latin-400-italic-.*\.woff2$/,
+  ];
   return {
     name: 'preload-critical-fonts',
     apply: 'build',

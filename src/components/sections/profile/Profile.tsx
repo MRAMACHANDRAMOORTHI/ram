@@ -2,10 +2,7 @@ import { m, useScroll } from 'framer-motion';
 import { Fragment, useRef } from 'react';
 import { education } from '../../../content/experience';
 import { profile } from '../../../content/profile';
-import type { Tone } from '../../../content/types';
 import { EASE_OUT_EXPO } from '../../../lib/motion';
-import { toneText } from '../../../lib/tones';
-import { cn } from '../../../lib/utils';
 import { Counter } from '../../primitives/Counter';
 import { Icon } from '../../primitives/Icon';
 import { Reveal, RevealGroup, RevealItem } from '../../primitives/Reveal';
@@ -14,10 +11,10 @@ import { ToneSection } from '../../primitives/ToneSection';
 import { IdentityCard } from './IdentityCard';
 import { ScrollStatement } from './ScrollStatement';
 
-const glance: Array<{ value: number; suffix: string; label: string; tone: Tone }> = [
-  { value: 3, suffix: '', label: 'Engineering roles since May 2024', tone: 'systems' },
-  { value: 30, suffix: '%', label: 'Engagement lift on CICT’s learning platform', tone: 'automation' },
-  { value: 25, suffix: '%', label: 'Faster data retrieval after MySQL tuning at RETECH', tone: 'systems' },
+const glance: Array<{ value: number; suffix: string; label: string }> = [
+  { value: 3, suffix: '', label: 'Engineering roles since May 2024' },
+  { value: 30, suffix: '%', label: 'Engagement lift on CICT’s learning platform' },
+  { value: 25, suffix: '%', label: 'Faster data retrieval after MySQL tuning at RETECH' },
 ];
 
 /** Plain text with *asterisk* accents rendered as serif italics. */
@@ -106,7 +103,7 @@ export function Profile() {
                 as="h2"
                 id="profile-title"
                 text={'Most of my work is the part\nyou *don’t see.*'}
-                className="mt-6 text-[clamp(2.25rem,1.3rem+2.9vw,4rem)] leading-[0.98] font-medium tracking-[-0.04em] text-balance outline-none [&_.serif-em]:text-tone"
+                className="mt-6 font-serif text-[clamp(2.6rem,1.5rem+3.2vw,4.5rem)] leading-[1] font-normal tracking-[-0.015em] text-balance outline-none [&_.serif-em]:text-accent"
               />
             </header>
 
@@ -123,7 +120,7 @@ export function Profile() {
                   <Counter
                     value={g.value}
                     suffix={g.suffix}
-                    className={cn('block text-[clamp(2.25rem,1.6rem+2.4vw,3.5rem)] leading-none font-medium tracking-[-0.04em]', toneText[g.tone])}
+                    className="block font-serif text-[clamp(2.6rem,1.8rem+2.6vw,4rem)] leading-none tracking-[-0.01em] text-ink"
                   />
                   <span className="mt-3 block max-w-[14rem] text-[0.8125rem] leading-snug text-muted sm:text-sm">{g.label}</span>
                 </RevealItem>
